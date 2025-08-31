@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="card round-24 p-4" style="border-radius: 18px;">
+    <!-- Back + Search row -->
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-3">
+      <a href="/dashboard/" class="d-inline-flex align-items-center text-decoration-none" style="color:#6b7280;">
+        <i class="bi bi-chevron-left me-1"></i> <span class="fw-semibold">Back</span>
+      </a>
+
+      <form method="get" class="ms-auto" style="max-width: 420px; width:100%;">
+        <div class="input-group">
+          <input name="q" value="{{ q }}" class="form-control form-control-lg"
+                 placeholder="Search users..." aria-label="Search users"
+                 style="border-radius: 12px 0 0 12px;">
+          <button class="btn btn-outline-secondary btn-lg" type="submit" style="border-radius: 0 12px 12px 0;">
+            <i class="bi bi-search"></i>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- List -->
+    <div class="users-list mt-3">
+      {% for u in users %}
+        <div class="user-tile d-flex align-items-center justify-content-between">
+          <div class="fw-bold" style="color:#6b7280;">{{ u.get_full_name|default:u.username }}</div>
+          <a class="btn btn-light btn-sm tile-view-btn" href="{% url 'accounts:detail' u.id %}">
+            <i class="bi bi-eye me-1"></i> View Profile
+          </a>
+        </div>
+      {% empty %}
+        <div class="empty">No users found.</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+</html>

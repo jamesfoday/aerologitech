@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+{% extends "base.html" %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+
+{% block content %}
+<div class="container-fluid mt-3">
+  <div class="topbar">
+    <span class="me-2 fw-semibold">Logout</span>
+    <span class="btn btn-light btn-sm round-24 shadow-soft">⏻</span>
+  </div>
+
+  <div class="row">
+    <!-- Left: Profile + Shortcuts -->
+    <div class="col-md-3">
+      <div class="profile-panel shadow-soft">
+        <div class="d-flex flex-column align-items-center">
+          <div class="profile-avatar">
+            <img src="{% static 'images/default-profile.png' %}" alt="Profile" width="40" height="40">
+          </div>
+          <div class="profile-name">Welcome {{ request.user.username }}</div>
+          <button class="btn-edit mt-2">Edit Profile ✏️</button>
+        </div>
+      </div>
+
+      <div class="card mt-3 p-3 shortcuts">
+        <div class="row text-center">
+          <div class="col-6 mb-3">
+  <a href="/users/" class="text-decoration-none">
+    <div class="shortcut users"><i class="bi bi-people"></i></div>
+    <div class="lbl">Users</div>
+  </a>
+</div>
+
+          <div class="col-6 mb-3">
+            <div class="shortcut orders"><i class="bi bi-bag"></i></div>
+            <div class="lbl">Orders</div>
+          </div>
+          <div class="col-6 mb-3">
+            <div class="shortcut msgs"><i class="bi bi-chat"></i></div>
+            <div class="lbl">Message</div>
+          </div>
+          <div class="col-6 mb-3">
+            <div class="shortcut invoice"><i class="bi bi-receipt"></i></div>
+            <div class="lbl">Invoice</div>
+          </div>
+          <div class="col-6 mb-1">
+            <div class="shortcut services"><i class="bi bi-plus-circle"></i></div>
+            <div class="lbl">Services</div>
+          </div>
+          <div class="col-6 mb-1">
+            <div class="shortcut addcar"><i class="bi bi-car-front"></i></div>
+            <div class="lbl">Add car</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Main dashboard -->
+    <div class="col-md-9">
+      <!-- Sales -->
+      <div class="card p-3 mb-3">
+        <div class="section-head">
+          <h5 class="mb-0">Sales</h5>
+        </div>
+        <div class="mt-3">
+          <canvas id="salesChart" height="100"></canvas>
+        </div>
+      </div>
+
+      <!-- Recent services -->
+      <div class="card p-3 mb-3">
+        <div class="section-head">
+          <h5 class="mb-0">Recent services booked</h5>
+          <button class="btn-pill">See All</button>
+        </div>
+        <div class="mt-3">
+          {% for order in recent_services %}
+            <div class="list-tile">Comfort • {{ order.customer_name }} • €{{ order.amount }} • {{ order.created_at|date:"M d, Y" }}</div>
+          {% empty %}
+            <div class="empty">No services booked</div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Car rental -->
+      <div class="card p-3">
+        <div class="section-head">
+          <h5 class="mb-0">Car rental</h5>
+          <button class="btn-pill">See All</button>
+        </div>
+        <div class="mt-3">
+          {% for order in recent_cars %}
+            <div class="list-tile">Car Rental • {{ order.customer_name }} • €{{ order.amount }} • {{ order.created_at|date:"M d, Y" }}</div>
+          {% empty %}
+            <div class="empty">No car rent</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Chart JSON payloads -->
+{{ labels|json_script:"labels-data" }}
+{{ airport_series|json_script:"airport-data" }}
+{{ car_series|json_script:"car-data" }}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const labels        = JSON.parse(document.getElementById('labels-data').textContent);
+  const airportSeries = JSON.parse(document.getElementById('airport-data').textContent);
+  const carSeries     = JSON.parse(document.getElementById('car-data').textContent);
+
+  const ctx = document.getElementById('salesChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label: 'airport services', data: airportSeries, tension: 0.35, fill: true, borderWidth: 2 },
+        { label: 'car rental',       data: carSeries,     tension: 0.35, fill: true, borderWidth: 2 },
+      ]
+    },
+    options: {
+      responsive: true,
+      scales: { y: { beginAtZero: true } },
+      plugins: { legend: { position: 'top' } }
+    }
+  });
+</script>
+{% endblock %}
+
+
+
+</html>
+
