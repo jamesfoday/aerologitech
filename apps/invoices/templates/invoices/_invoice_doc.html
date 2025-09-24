@@ -1,0 +1,165 @@
+{# apps/invoices/templates/invoices/_invoice_doc.html #}
+{% load static %}
+{% load invoice_math %}
+
+<style>
+  /* === Scoped styles for the invoice partial === */
+  .inv-sheet {
+    width: 820px; max-width: 100%;
+    margin: 0 auto; background: #fff; border-radius: 12px;
+    padding: 28px;
+    box-shadow: 0 8px 22px rgba(26,39,68,.06);
+  }
+
+  .header { display:flex; justify-content:space-between; align-items:flex-start; }
+  .inv-brand { display:flex; align-items:center; gap:16px; }
+  .inv-brand img { width:96px; height:auto; display:block; } /* bigger logo */
+  .inv-brand .company { font-weight:800; line-height:1.2; }
+  .inv-brand .company small { display:block; font-weight:600; color:#6b7280; margin-top:2px; }
+  .inv-right { text-align:right; }
+  .inv-title { font-weight:800; }
+  .inv-no { font-weight:700; }
+
+  .thin-line { height:1px; background:#e5e7eb; margin:16px 0; }
+
+  .meta { display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+  .meta .lbl { font-weight:800; color:#6b7280; font-size:12px; margin-right:6px; }
+  .meta .val { font-weight:600; font-size:13px; }
+  .meta .right { text-align:right; }
+
+  table.inv { width:100%; border-collapse:separate; border-spacing:0 8px; font-size:13px; }
+  table.inv thead th {
+    background:#2f80ed; color:#fff; padding:10px 12px; font-weight:700; text-align:left;
+    border-top-left-radius:8px; border-top-right-radius:8px;
+  }
+  table.inv tbody td {
+    background:#edf4fa; padding:10px 12px; color:#374151;
+  }
+  table.inv tbody tr td:first-child { border-top-left-radius:8px; border-bottom-left-radius:8px; }
+  table.inv tbody tr td:last-child  { border-top-right-radius:8px; border-bottom-right-radius:8px; }
+  .ta-right { text-align:right; }
+
+  .totals-wrap { display:flex; justify-content:flex-end; margin-top:12px; }
+  .totals { width: 380px; max-width: 100%; border-collapse: collapse; }
+  .totals td { padding:8px 10px; }
+  .totals .label { color:#6b7280; }
+  .totals .value { text-align:right; font-weight:600; }
+  .totals .grand td { background:#007bff; color:#fff; font-weight:800;   }
+  .totals .grand .label { color:#fff; }
+
+  .signature { text-align:right; margin-top:10px; color:#6b7280; }
+  .signature b { color:#0f172a; }
+
+  .inv-footer {
+    display:flex; justify-content:space-between; gap:12px; margin-top:18px;
+    padding:10px 12px; background:#f3f4f6; border-radius:8px; font-size:12px; color:#6b7280;
+  }
+</style>
+
+<div class="inv-sheet">
+  <!-- Header -->
+  <div class="header">
+    <div class="inv-brand">
+      <img src="{% static 'images/company-logo.png' %}" alt="AeroLogicTech">
+      <div class="company">
+        AeroLogicTech
+        <small>Gambia</small>
+      </div>
+    </div>
+    <div class="inv-right">
+      <div class="inv-title">Invoice</div>
+      <div class="inv-no">#{{ inv.number }}</div>
+    </div>
+  </div>
+
+  <!-- Meta -->
+  <div class="thin-line"></div>
+
+  <div class="meta">
+    <div>
+      <span class="lbl">BILLED TO:</span>
+      <span class="val">{{ inv.user.get_full_name|default:inv.user.username }}</span>
+      {% if inv.user.email %}<div class="val" style="margin-top:2px; color:#6b7280;">{{ inv.user.email }}</div>{% endif %}
+    </div>
+
+    <div class="right">
+      <span class="lbl">DUE DATE:</span>
+      <span class="val">{% if inv.due_at %}{{ inv.due_at|date:"d M, Y" }}{% else %}—{% endif %}</span>
+    </div>
+
+    <div>
+      <span class="lbl">ISSUE DATE:</span>
+      <span class="val">{{ inv.issued_at|date:"d M, Y" }}</span>
+    </div>
+
+    <div class="right">
+      <span class="lbl">STATUS:</span>
+      <span class="val">{{ inv.get_status_display|default:inv.status }}</span>
+    </div>
+  </div>
+
+  <!-- Items -->
+  <div style="margin-top:14px;">
+    <table class="inv">
+      <thead>
+        <tr>
+          <th style="width:70px;">NO</th>
+          <th>Description</th>
+          <th style="width:80px;">QTY</th>
+          <th style="width:120px;">Price</th>
+          <th style="width:120px;">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for it in inv.items.all %}
+        <tr>
+          <td>{{ forloop.counter|stringformat:"02d" }}</td>
+          <td>{{ it.description }}</td>
+          <td class="ta-right">{{ it.qty|floatformat:2 }}</td>
+          <td class="ta-right">{{ it.unit_price|floatformat:2 }} {{ inv.currency }}</td>
+          <td class="ta-right">
+            {% if it.line_total %}{{ it.line_total|floatformat:2 }}{% else %}{{ it.qty|mul:it.unit_price|floatformat:2 }}{% endif %}
+            {{ inv.currency }}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" style="text-align:center; background:#fff; color:#9ca3af;">No line items.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Totals (right aligned) -->
+  <div class="totals-wrap">
+    <table class="totals">
+      <tbody>
+        <tr>
+          <td class="label">Sub Total</td>
+          <td class="value">{{ inv.subtotal|floatformat:2 }} {{ inv.currency }}</td>
+        </tr>
+        <tr>
+          <td class="label">Tax ({{ inv.tax_rate|floatformat:2 }}%)</td>
+          <td class="value">{{ inv.tax_amount|floatformat:2 }} {{ inv.currency }}</td>
+        </tr>
+        <tr class="grand">
+          <td class="label">Grand Total</td>
+          <td class="value">{{ inv.total|floatformat:2 }} {{ inv.currency }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Signature -->
+  <div class="signature">
+    <b>Authorized</b> — Management
+  </div>
+
+  <!-- Footer -->
+  <div class="inv-footer">
+    <div>+220 123 4567</div>
+    <div>support@aerologictech.com</div>
+    <div>Banjul International Airport</div>
+  </div>
+</div>

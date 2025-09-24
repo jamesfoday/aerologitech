@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Login — Aircar{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+  <div class="auth-card">
+
+    <!-- Tabs -->
+    <div class="auth-tabs" role="tablist" aria-label="Auth tabs">
+      {% with active_tab|default:'login' as active %}
+        <button
+          class="auth-tab {% if active == 'login' %}is-active{% endif %}"
+          role="tab"
+          aria-selected="{% if active == 'login' %}true{% else %}false{% endif %}"
+          aria-controls="panel-login"
+          id="tab-login"
+          data-auth-tab="login"
+          type="button">
+          Login
+        </button>
+        <button
+          class="auth-tab {% if active == 'register' %}is-active{% endif %}"
+          role="tab"
+          aria-selected="{% if active == 'register' %}true{% else %}false{% endif %}"
+          aria-controls="panel-register"
+          id="tab-register"
+          data-auth-tab="register"
+          type="button">
+          Register
+        </button>
+      {% endwith %}
+    </div>
+
+    <!-- LOGIN PANEL -->
+    <section
+      id="panel-login"
+      class="auth-panel {% if active_tab and active_tab != 'login' %}is-hidden{% endif %}"
+      role="tabpanel"
+      aria-labelledby="tab-login">
+
+      <h1 class="auth-title">Login</h1>
+
+      {% if form.non_field_errors %}
+        <div class="auth-alert">
+          {% for e in form.non_field_errors %}{{ e }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+        </div>
+      {% endif %}
+
+      <form method="post" action="{% url 'login' %}" class="auth-form" novalidate>
+        {% csrf_token %}
+        {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+
+        <div class="auth-field">
+          <input
+            type="text"
+            name="{{ form.username.name|default:'username' }}"
+            id="id_username"
+            value="{{ form.username.value|default_if_none:'' }}"
+            placeholder="user or email"
+            required
+            autocomplete="username"
+            class="auth-input">
+        </div>
+
+        <div class="auth-field auth-field--password">
+          <input
+            type="password"
+            name="{{ form.password.name|default:'password' }}"
+            id="id_password"
+            placeholder="Password"
+            required
+            autocomplete="current-password"
+            class="auth-input">
+          <button type="button" class="auth-eye" aria-label="Show password" data-toggle-password="#id_password">
+            <i class="bi bi-eye"></i>
+          </button>
+        </div>
+
+        <button type="submit" class="auth-btn">Login</button>
+
+        <div class="auth-links">
+          <a href="{% url 'password_reset' %}">Forgot password?</a>
+          <span class="auth-sep">•</span>
+          <a href="?tab=register" class="auth-switch" data-switch-tab="register">Need an account? Register</a>
+        </div>
+      </form>
+    </section>
+
+    <!-- REGISTER PANEL -->
+    <section
+      id="panel-register"
+      class="auth-panel {% if not active_tab or active_tab == 'login' %}is-hidden{% endif %}"
+      role="tabpanel"
+      aria-labelledby="tab-register">
+
+      <h1 class="auth-title">Create your account</h1>
+
+      {% if signup_form and signup_form.non_field_errors %}
+        <div class="auth-alert">
+          {% for e in signup_form.non_field_errors %}{{ e }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+        </div>
+      {% endif %}
+
+      <form method="post" action="{% url 'accounts:signup' %}" class="auth-form" novalidate>
+        {% csrf_token %}
+
+        <div class="auth-field">
+          {% if signup_form %}{{ signup_form.username.errors }}{% endif %}
+          <input type="text" name="username" id="su_username"
+                 value="{% if signup_form %}{{ signup_form.username.value|default_if_none:'' }}{% endif %}"
+                 placeholder="Username" required autocomplete="username" class="auth-input">
+        </div>
+
+        <div class="auth-field">
+          {% if signup_form %}{{ signup_form.first_name.errors }}{% endif %}
+          <input type="text" name="first_name" id="su_first_name"
+                 value="{% if signup_form %}{{ signup_form.first_name.value|default_if_none:'' }}{% endif %}"
+                 placeholder="First name" class="auth-input">
+        </div>
+
+        <div class="auth-field">
+          {% if signup_form %}{{ signup_form.last_name.errors }}{% endif %}
+          <input type="text" name="last_name" id="su_last_name"
+                 value="{% if signup_form %}{{ signup_form.last_name.value|default_if_none:'' }}{% endif %}"
+                 placeholder="Last name" class="auth-input">
+        </div>
+
+        <div class="auth-field">
+          {% if signup_form %}{{ signup_form.email.errors }}{% endif %}
+          <input type="email" name="email" id="su_email"
+                 value="{% if signup_form %}{{ signup_form.email.value|default_if_none:'' }}{% endif %}"
+                 placeholder="Email" required autocomplete="email" class="auth-input">
+        </div>
+
+        <div class="auth-field">
+          {% if signup_form and signup_form.phone %}{{ signup_form.phone.errors }}{% endif %}
+          <input type="text" name="phone" id="su_phone"
+                 value="{% if signup_form and signup_form.phone %}{{ signup_form.phone.value|default_if_none:'' }}{% endif %}"
+                 placeholder="Phone" class="auth-input" autocomplete="tel">
+        </div>
+
+        <div class="auth-field auth-field--password">
+          {% if signup_form %}{{ signup_form.password1.errors }}{% endif %}
+          <input type="password" name="password1" id="su_password1"
+                 placeholder="Password" required autocomplete="new-password" class="auth-input">
+          <button type="button" class="auth-eye" aria-label="Show password" data-toggle-password="#su_password1">
+            <i class="bi bi-eye"></i>
+          </button>
+        </div>
+
+        <div class="auth-field auth-field--password">
+          {% if signup_form %}{{ signup_form.password2.errors }}{% endif %}
+          <input type="password" name="password2" id="su_password2"
+                 placeholder="Confirm password" required autocomplete="new-password" class="auth-input">
+          <button type="button" class="auth-eye" aria-label="Show password" data-toggle-password="#su_password2">
+            <i class="bi bi-eye"></i>
+          </button>
+        </div>
+
+        <button type="submit" class="auth-btn">Create account</button>
+
+        <div class="auth-links">
+          <a href="?tab=login" class="auth-switch" data-switch-tab="login">Already have an account? Login</a>
+        </div>
+      </form>
+    </section>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'js/auth_tabs.js' %}" defer></script>
+{% endblock %}

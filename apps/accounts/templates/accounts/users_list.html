@@ -1,5 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
 {% extends "base.html" %}
 {% load static %}
 
@@ -10,13 +8,13 @@
 {% block content %}
 <div class="container py-4">
   <div class="card round-24 p-4" style="border-radius: 18px;">
-    <!-- Back + Search row -->
+    <!-- Back + Search + Add -->
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-3">
       <a href="/dashboard/" class="d-inline-flex align-items-center text-decoration-none" style="color:#6b7280;">
         <i class="bi bi-chevron-left me-1"></i> <span class="fw-semibold">Back</span>
       </a>
 
-      <form method="get" class="ms-auto" style="max-width: 420px; width:100%;">
+      <form method="get" class="ms-auto me-2" style="max-width: 420px; width:100%;">
         <div class="input-group">
           <input name="q" value="{{ q }}" class="form-control form-control-lg"
                  placeholder="Search users..." aria-label="Search users"
@@ -26,16 +24,77 @@
           </button>
         </div>
       </form>
+
+      {% if request.user.is_staff or request.user.is_superuser %}
+        <a href="{% url 'accounts:add' %}" class="btn btn-success btn-lg" style="border-radius: 12px;">
+          <i class="bi bi-plus-lg me-1"></i> Add User
+        </a>
+      {% endif %}
     </div>
+
+    <!-- Flash messages -->
+    {% if messages %}
+      <div class="mb-2">
+        {% for m in messages %}
+          <div class="alert alert-{{ m.tags }} mb-2 py-2 px-3">{{ m }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
 
     <!-- List -->
     <div class="users-list mt-3">
       {% for u in users %}
-        <div class="user-tile d-flex align-items-center justify-content-between">
-          <div class="fw-bold" style="color:#6b7280;">{{ u.get_full_name|default:u.username }}</div>
-          <a class="btn btn-light btn-sm tile-view-btn" href="{% url 'accounts:detail' u.id %}">
-            <i class="bi bi-eye me-1"></i> View Profile
-          </a>
+        <div class="list-tile d-flex align-items-center justify-content-between">
+          <div>
+            <div class="fw-bold" style="color:#111827;">
+              {{ u.get_full_name|default:u.username }}
+              {% if u.is_active %}
+                <span class="badge text-bg-success ms-2">Active</span>
+              {% else %}
+                <span class="badge text-bg-secondary ms-2">Deactivated</span>
+              {% endif %}
+            </div>
+            <div class="text-muted small">
+              {{ u.email }}{% if u.email %} • {% endif %} Joined {{ u.date_joined|date:"M d, Y" }}
+            </div>
+          </div>
+
+          <div class="d-flex align-items-center gap-2">
+            <a class="btn btn-light btn-sm tile-view-btn" href="{% url 'accounts:detail' u.id %}">
+              <i class="bi bi-eye me-1"></i> View Profile
+            </a>
+
+            {% if request.user.is_staff or request.user.is_superuser %}
+              {# Deactivate / Reactivate toggle #}
+              {% if u.is_active %}
+                <form action="{% url 'accounts:deactivate' u.id %}" method="post" class="d-inline">
+                  {% csrf_token %}
+                  <button class="btn btn-warning btn-sm" type="submit">
+                    <i class="bi bi-slash-circle me-1"></i> Deactivate
+                  </button>
+                </form>
+              {% else %}
+                <form action="{% url 'accounts:reactivate' u.id %}" method="post" class="d-inline">
+                  {% csrf_token %}
+                  <button class="btn btn-success btn-sm" type="submit">
+                    <i class="bi bi-check2-circle me-1"></i> Reactivate
+                  </button>
+                </form>
+              {% endif %}
+
+              {# Delete permanently — only show if no orders #}
+              {% if not u.has_orders %}
+                <form action="{% url 'accounts:delete' u.id %}" method="post"
+                      onsubmit="return confirm('Permanently delete this user? This cannot be undone.');"
+                      class="d-inline">
+                  {% csrf_token %}
+                  <button class="btn btn-outline-danger btn-sm" type="submit" style="border-radius: 999px;">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
+              {% endif %}
+            {% endif %}
+          </div>
         </div>
       {% empty %}
         <div class="empty">No users found.</div>
@@ -44,5 +103,3 @@
   </div>
 </div>
 {% endblock %}
-
-</html>

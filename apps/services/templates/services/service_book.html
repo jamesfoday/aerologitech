@@ -1,0 +1,67 @@
+{# apps/services/templates/services/partials/booking_modal.html #}
+<div id="bm-overlay" class="bm-overlay" hidden>
+  <button type="button" class="bm-close" aria-label="Close booking">&times;</button>
+
+  <div class="bm-modal" role="dialog" aria-modal="true" aria-labelledby="bm-title">
+    <div class="bm-header">
+      <div class="bm-header-left">
+        <div class="bm-service-name">{{ object.name }}</div>
+        <div class="bm-service-price">{{ object.price|floatformat:0 }} €</div>
+      </div>
+
+      <button type="button" class="bm-continue" id="bm-continue-step1">
+        Continue <i class="bi bi-chevron-right ms-1"></i>
+      </button>
+    </div>
+
+    <form id="bm-form" class="bm-body" novalidate>
+      {% csrf_token %}
+      <div id="bm-step1">
+        <div class="bm-field">
+          <input type="datetime-local" id="bm-datetime" class="bm-input" required />
+          <i class="bi bi-clock bm-ico"></i>
+        </div>
+
+        <div class="bm-field"><input type="text"  id="bm-name"  class="bm-input" placeholder="Name"  required></div>
+        <div class="bm-field"><input type="email" id="bm-email" class="bm-input" placeholder="Email" required></div>
+        <div class="bm-field"><input type="tel"   id="bm-phone" class="bm-input" placeholder="Phone" required></div>
+
+        <div class="bm-terms-wrap">
+          <div class="bm-terms-title">Terms &amp; Condition</div>
+          <div class="bm-terms-box">
+            {% if object.description %}{{ object.description }}
+            {% elif object.tank %}{{ object.tank }}
+            {% else %}No terms provided.{% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div id="bm-step2" hidden>
+        <div class="bm-review">
+          <div class="bm-review-row">
+            <div class="bm-dot"></div>
+            <div class="bm-review-col">
+              <div class="bm-review-label">Date</div>
+              <div id="bm-review-date" class="bm-review-value"></div>
+            </div>
+            <button type="button" class="bm-edit" id="bm-edit-date" aria-label="Edit date">
+              <i class="bi bi-pencil"></i>
+            </button>
+          </div>
+
+          <div class="bm-review-block">
+            <div id="bm-review-name"  class="bm-review-line"></div>
+            <div id="bm-review-email" class="bm-review-line"></div>
+            <div id="bm-review-phone" class="bm-review-line"></div>
+          </div>
+        </div>
+
+        <div class="bm-pay-title">Choose Payment Method</div>
+        <div class="d-grid gap-2">
+          <button type="button" class="bm-pay btn-cash"  id="bm-pay-cash">Pay with cash on arrival</button>
+          <button type="button" class="bm-pay btn-paypal" id="bm-pay-paypal">Paypal</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

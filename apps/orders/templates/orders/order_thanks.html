@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width:760px;">
+  <div class="card p-4 round-24" style="border-radius:18px;">
+    <h3 class="mb-3">Thanks for your booking!</h3>
+    <p class="text-muted mb-4">Your order has been recorded. Keep this receipt for your records.</p>
+
+    <div class="bg-light p-3 rounded mb-3">
+      <div><strong>Order #:</strong> {{ o.id }}</div>
+      <div><strong>Category:</strong> {{ o.get_category_display }}</div>
+      <div><strong>Amount:</strong> {{ o.amount }} {{ o.currency }}</div>
+      <div><strong>Status:</strong> {{ o.status }}</div>
+      <div><strong>Name:</strong> {{ o.customer_name }}</div>
+      <div><strong>Date:</strong> {{ o.created_at|date:"M d, Y H:i" }}</div>
+    </div>
+
+    {% if o.category == "AIRPORT_SERVICE" %}
+      <div><strong>Service:</strong> {{ o.meta.service_name|default:"—" }}</div>
+    {% elif o.category == "CAR_RENTAL" %}
+      <div><strong>Car:</strong> {{ o.meta.car_name|default:"—" }}</div>
+    {% endif %}
+
+    <hr class="my-4"/>
+
+    <div class="d-flex gap-2">
+      <a href="/" class="btn btn-outline-secondary">Back to home</a>
+      {% if request.user.is_staff %}
+        <a href="{% url 'orders:list' %}" class="btn btn-primary">Go to orders</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

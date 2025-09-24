@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="orders-wrap container py-4">
+  <div class="orders-card card p-4 round-24">
+    <!-- Top: Back + Filters + Search -->
+    <div class="orders-top d-flex align-items-center flex-wrap gap-3 mb-3">
+      <a href="/dashboard/" class="orders-back d-inline-flex align-items-center text-decoration-none">
+        <i class="bi bi-chevron-left me-1"></i><span class="fw-semibold">Back</span>
+      </a>
+
+      <div class="orders-filters btn-group" role="group" aria-label="Range filters">
+        <a href="{% url 'orders:list' %}?range=week{% if q %}&q={{ q }}{% endif %}"
+           class="btn btn-pill btn-sm {% if date_range in 'week 7' %}btn-active{% endif %}">
+          Last 7 days
+        </a>
+        <a href="{% url 'orders:list' %}?range=month{% if q %}&q={{ q }}{% endif %}"
+           class="btn btn-pill btn-sm {% if date_range in 'month 30' %}btn-active{% endif %}">
+          Last 30 days
+        </a>
+        <a href="{% url 'orders:list' %}{% if q %}?q={{ q }}{% endif %}"
+           class="btn btn-pill btn-sm {% if not date_range %}btn-active{% endif %}">
+          All time
+        </a>
+      </div>
+
+      <form method="get" class="orders-search ms-auto">
+        <input type="hidden" name="range" value="{{ date_range }}">
+        <div class="input-group">
+          <input name="q" value="{{ q }}" class="form-control form-control-lg orders-search-input"
+                 placeholder="Search orders (name, status, category)…" aria-label="Search orders">
+          <button class="btn btn-outline-secondary btn-lg orders-search-btn" type="submit">
+            <i class="bi bi-search"></i>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- List -->
+    {% if page_obj and page_obj.object_list %}
+      <div class="orders-list mt-2">
+        {% for o in page_obj.object_list %}
+          <div class="list-tile d-flex align-items-center justify-content-between">
+            <div class="tile-left">
+              <div class="tile-line fw-semibold">
+                {{ o.get_category_display|default:o.category }}
+                • €{{ o.amount }} {{ o.currency|default:"" }}
+                • <span class="order-status badge-soft">{{ o.status|default:"—" }}</span>
+              </div>
+              <div class="tile-sub text-muted small">
+                {{ o.customer_name|default:"—" }} • {{ o.created_at|date:"M d, Y H:i" }}
+              </div>
+            </div>
+            <div class="tile-right">
+              <a href="{% url 'orders:detail' o.id %}" class="btn btn-light btn-sm tile-view-btn">
+                <i class="bi bi-eye me-1"></i> View
+              </a>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <!-- Pager -->
+      <nav class="orders-pager d-flex gap-2 justify-content-center mt-3" aria-label="Orders pages">
+        <a class="page-link-soft {% if not page_obj.has_previous %}is-disabled{% endif %}"
+           href="{% if page_obj.has_previous %}?q={{ q }}&range={{ date_range }}&page={{ page_obj.previous_page_number }}{% else %}#{% endif %}">
+          Previous
+        </a>
+        <span class="page-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        <a class="page-link-soft {% if not page_obj.has_next %}is-disabled{% endif %}"
+           href="{% if page_obj.has_next %}?q={{ q }}&range={{ date_range }}&page={{ page_obj.next_page_number }}{% else %}#{% endif %}">
+          Next
+        </a>
+      </nav>
+    {% else %}
+      <div class="empty">No orders match your filters.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

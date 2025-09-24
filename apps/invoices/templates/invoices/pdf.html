@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+{% load static %}
+{% load invoice_math %}
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Invoice {{ inv.number|default:"Invoice" }}</title>
+
+  {# Provided by the view: base_url = request.build_absolute_uri("/") #}
+  <base href="{{ base_url }}">
+
+  <style>
+    /* Page & typography */
+    @page { size: A4; margin: 18mm; }
+    html, body { background: #fff; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      font-size: 12px; line-height: 1.45; color: #0f172a; margin: 0;
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    h1,h2,h3 { margin: 0 0 .5rem; }
+    .muted { color: #6b7280; }
+    .small { font-size: 11px; }
+    .text-right { text-align: right; }
+
+    /* Layout shell (centers like your detail page) */
+    .page-wrap { max-width: 980px; margin: 0 auto; padding: 0 12px; }
+
+    /* Card look to match UI */
+    .card {
+      border: 1px solid #e5e7eb; border-radius: 14px; padding: 18px 20px;
+      box-shadow: 0 8px 22px rgba(26,39,68,.06);
+    }
+
+    /* Rows/cols (simple flex so it works in PDF engines) */
+    .row { display: flex; flex-wrap: wrap; gap: 24px; }
+    .col { flex: 1 1 0; min-width: 0; }
+    .col-auto { flex: 0 0 auto; }
+
+    /* Bigger logo */
+    .logo { height: 80px; display: block; }
+
+    /* Table */
+    .table { width: 100%; border-collapse: collapse; }
+    .table th, .table td { padding: 10px; border-bottom: 1px solid #e5e7eb; }
+    .table thead th {
+      background: #e8f0fb; color: #0f172a; font-weight: 600;
+    }
+
+    /* Totals block aligned right */
+    .totals-box { max-width: 420px; margin-left: auto; }
+    .totals-box table { width: 100%; border-collapse: collapse; }
+    .totals-box td { padding: 6px 8px; }
+    .totals-box tr:last-child td { font-weight: 700; border-top: 1px solid #072c58; }
+
+    .section { margin: 16px 0; }
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+    <div class="card">
+
+      <!-- Header -->
+      <div class="row section" style="align-items:center;">
+        <div class="col-auto">
+          <img class="logo" src="{% static 'images/company-logo.png' %}" alt="Company logo">
+        </div>
+        <div class="col"></div>
+        <div class="col-auto" style="text-align:right;">
+          <h2>Invoice</h2>
+          <div class="muted small"># {{ inv.number }}</div>
+          <div class="small">Status: {{ inv.status|upper }}</div>
+        </div>
+      </div>
+
+      <!-- Parties & Dates -->
+      <div class="row section">
+        <div class="col">
+          <h3>Bill To</h3>
+          <div>{{ inv.user.get_full_name|default:inv.user.username }}</div>
+          {% if inv.user.email %}<div class="muted small">{{ inv.user.email }}</div>{% endif %}
+        </div>
+        <div class="col">
+          <h3>Details</h3>
+          <div>Issue date: {{ inv.issued_at|date:"d M Y" }}</div>
+          <div>Due date: {% if inv.due_at %}{{ inv.due_at|date:"d M Y" }}{% else %}—{% endif %}</div>
+          {% if inv.reference %}<div>Reference: {{ inv.reference }}</div>{% endif %}
+        </div>
+      </div>
+
+      <!-- Line Items -->
+      <div class="section">
+        <table class="table">
+          <thead>
+            <tr>
+              <th style="width:36px;">No</th>
+              <th>Description</th>
+              <th style="width:70px;" class="text-right">Qty</th>
+              <th style="width:110px;" class="text-right">Unit price</th>
+              <th style="width:120px;" class="text-right">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for it in inv.items.all %}
+            <tr>
+              <td>{{ forloop.counter|stringformat:"02d" }}</td>
+              <td>{{ it.description }}</td>
+              <td class="text-right">{{ it.qty|floatformat:2 }}</td>
+              <td class="text-right">{{ it.unit_price|floatformat:2 }} {{ inv.currency }}</td>
+              <td class="text-right">{{ it.qty|mul:it.unit_price|floatformat:2 }} {{ inv.currency }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" class="muted">No items.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Totals (right column) -->
+      <div class="section totals-box">
+        <table>
+          <tbody>
+            <tr>
+              <td class="muted">Subtotal:</td>
+              <td class="text-right">{{ inv.subtotal|floatformat:2 }} {{ inv.currency }}</td>
+            </tr>
+            <tr>
+              <td class="muted">Tax ({{ inv.tax_rate|floatformat:2 }}%):</td>
+              <td class="text-right">{{ inv.tax_amount|floatformat:2 }} {{ inv.currency }}</td>
+            </tr>
+            <tr>
+              <td>Grand Total:</td>
+              <td class="text-right">{{ inv.total|floatformat:2 }} {{ inv.currency }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="text-right muted small" style="margin-top:10px;">
+          <b>Authorized</b> — Management
+        </div>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>

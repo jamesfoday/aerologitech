@@ -1,0 +1,104 @@
+{# Shared booking modal: pass in context var `object` (service or car) + `object_type` #}
+<div
+  id="bm-overlay"
+  class="bm-overlay"
+  data-object-type="{{ object_type }}"
+  data-object-id="{{ object.id }}"
+  data-action="{% url 'orders:create' %}"
+  data-orders-list-url="{% url 'orders:list' %}"
+  hidden
+>
+  <button type="button" class="bm-close" aria-label="Close booking">&times;</button>
+
+  <div class="bm-modal" role="dialog" aria-modal="true" aria-labelledby="bm-title">
+    <h2 id="bm-title" class="visually-hidden">Booking</h2>
+
+    <div class="bm-header">
+      <div class="bm-header-left">
+        <div class="bm-service-name">
+          {% if object.name %}{{ object.name }}{% else %}{{ object }}{% endif %}
+        </div>
+        <div class="bm-service-price">
+          {% if object.price %}{{ object.price|floatformat:0 }} €{% else %}—{% endif %}
+        </div>
+      </div>
+
+      <button type="button" class="bm-continue" id="bm-continue-step1">
+        Continue <i class="bi bi-chevron-right ms-1" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    <form id="bm-form" class="bm-body" novalidate>
+      {% csrf_token %}
+
+      {# ---------- Step 1 ---------- #}
+      <div id="bm-step1">
+        <div class="bm-field bm-field--datetime">
+          <input type="datetime-local" id="bm-datetime" class="bm-input" required />
+          <button type="button" class="bm-ctrl" id="bm-open-picker" aria-label="Open calendar">
+            <i class="bi bi-calendar-event" aria-hidden="true"></i>
+            <span class="d-none d-sm-inline">Pick</span>
+          </button>
+          <button type="button" class="bm-ctrl" id="bm-clear-datetime" aria-label="Clear date">
+            <i class="bi bi-x-lg" aria-hidden="true"></i>
+            <span class="d-none d-sm-inline">Clear</span>
+          </button>
+        </div>
+
+        <div class="bm-field">
+          <input type="text" id="bm-name" class="bm-input" placeholder="Name" required>
+        </div>
+
+        <div class="bm-field">
+          <input type="email" id="bm-email" class="bm-input" placeholder="Email" required>
+        </div>
+
+        <div class="bm-field">
+          <input type="tel" id="bm-phone" class="bm-input" placeholder="Phone" required>
+        </div>
+
+        <div class="bm-terms-wrap">
+          <div class="bm-terms-title">Terms &amp; Condition</div>
+          <div class="bm-terms-box">
+            {# AirportService uses description; Car may not. Fall back to tank or default. #}
+            {% if object.description %}{{ object.description }}
+            {% elif object.tank %}{{ object.tank }}
+            {% else %}No terms provided.{% endif %}
+          </div>
+        </div>
+      </div>
+
+      {# ---------- Step 2 (Review + Pay) ---------- #}
+      <div id="bm-step2" hidden>
+        <div class="bm-review">
+          <div class="bm-review-row">
+            <div class="bm-dot" aria-hidden="true"></div>
+            <div class="bm-review-col">
+              <div class="bm-review-label">Date</div>
+              <div id="bm-review-date" class="bm-review-value"></div>
+            </div>
+            <button type="button" class="bm-edit" id="bm-edit-date" aria-label="Edit date">
+              <i class="bi bi-pencil" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <div class="bm-review-block">
+            <div id="bm-review-name"  class="bm-review-line"></div>
+            <div id="bm-review-email" class="bm-review-line"></div>
+            <div id="bm-review-phone" class="bm-review-line"></div>
+          </div>
+        </div>
+
+        <div class="bm-pay-title">Choose Payment Method</div>
+        <div class="d-grid gap-2">
+          <button type="button" class="bm-pay btn-cash"  id="bm-pay-cash">
+            Pay with cash on arrival
+          </button>
+          <button type="button" class="bm-pay btn-paypal" id="bm-pay-paypal">
+            Paypal
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

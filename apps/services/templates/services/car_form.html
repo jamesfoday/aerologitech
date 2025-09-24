@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/cars.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="cars-viewport">
+  <div class="cars-card">
+    <div class="cars-topbar">
+      <a href="{% url 'services:car_list' %}" class="cars-back bi bi-chevron-left me-1">Back</a>
+      <h1 class="cars-title">
+        {% if mode == "edit" %}Edit a Car Rental{% else %}Create a Car Rental{% endif %}
+      </h1>
+      <span></span>
+    </div>
+
+    {% if form.errors %}
+      <div class="cars-alert">
+        Please fix the errors below.
+        <ul class="cars-error-list">
+          {% for field in form %}
+            {% for err in field.errors %}
+              <li><strong>{{ field.label }}:</strong> {{ err }}</li>
+            {% endfor %}
+          {% endfor %}
+          {% for err in form.non_field_errors %}
+            <li>{{ err }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" class="cars-form" novalidate>
+      {% csrf_token %}
+
+      <!-- Uploader (empty state + preview circle handled by cars.js) -->
+      <div class="cars-uploader" id="carUploader">
+        <!-- PREVIEW (existing image in edit mode) -->
+        {% if mode == "edit" and car and car.image %}
+          <img src="{{ car.image.url }}" alt="{{ car.name }}" class="cars-preview" id="cars-preview-existing">
+        {% endif %}
+        <!-- PREVIEW (live for new uploads; hidden by default) -->
+        <img alt="Preview" class="cars-preview is-hidden" id="cars-preview">
+
+        <!-- EMPTY STATE (click or drag & drop) -->
+        <label for="{{ form.image.id_for_label }}" class="cars-upload-zone cars-upload-zone--cloud">
+          <span class="cars-upload-hint">Upload image — Click or drag & drop</span>
+        </label>
+
+        <!-- Real file input (visually hidden) -->
+        <input type="file"
+               id="{{ form.image.id_for_label }}"
+               name="{{ form.image.name }}"
+               accept="image/*"
+               class="cars-file-input-visually-hidden">
+      </div>
+
+      <!-- Fields grid -->
+      <div class="cars-grid cars-grid--compact">
+        <!-- Name -->
+        <div class="cars-field cars-field--full">
+          <label class="cars-label" for="{{ form.name.id_for_label }}">Car Name</label>
+          <div class="cars-input-tile">
+            {{ form.name }}
+          </div>
+        </div>
+
+        <!-- Seats -->
+        <div class="cars-field">
+          <label class="cars-label" for="{{ form.seats.id_for_label }}">Seats</label>
+          <div class="cars-qty cars-qty--tile" data-qty>
+            <button class="cars-qty__btn" type="button" data-minus aria-label="Decrease seats">−</button>
+            {{ form.seats }}
+            <button class="cars-qty__btn" type="button" data-plus aria-label="Increase seats">+</button>
+          </div>
+        </div>
+
+        <!-- Transmission -->
+        <div class="cars-field">
+          <label class="cars-label" for="{{ form.transmission.id_for_label }}">Transmission</label>
+          <div class="cars-input-tile">
+            {{ form.transmission }}
+          </div>
+        </div>
+
+        <!-- Luggage -->
+        <div class="cars-field">
+          <label class="cars-label" for="{{ form.luggage.id_for_label }}">Luggage</label>
+          <div class="cars-qty cars-qty--tile" data-qty>
+            <button class="cars-qty__btn" type="button" data-minus aria-label="Decrease luggage">−</button>
+            {{ form.luggage }}
+            <button class="cars-qty__btn" type="button" data-plus aria-label="Increase luggage">+</button>
+          </div>
+        </div>
+
+        <!-- Tank -->
+        <div class="cars-field">
+          <label class="cars-label" for="{{ form.tank.id_for_label }}">Tank</label>
+          <div class="cars-input-tile">
+            {{ form.tank }}
+          </div>
+        </div>
+
+        <!-- Price -->
+        <div class="cars-field">
+          <label class="cars-label" for="{{ form.price.id_for_label }}">Price</label>
+          <div class="cars-input-tile cars-price">
+            {{ form.price }}
+            <span class="cars-price__suffix">€</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="cars-actions">
+        <a href="{% url 'services:car_list' %}" class="cars-btn cars-btn-light">Cancel</a>
+        <button type="submit" class="cars-btn cars-btn-primary">
+          {% if mode == "edit" %}Save Changes{% else %}Create{% endif %}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="{% static 'js/cars.js' %}"></script>
+{% endblock %}

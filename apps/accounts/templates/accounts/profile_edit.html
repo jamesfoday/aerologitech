@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/user_dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="ud-container ud-form-wrap">
+  <form method="post" class="ud-form">
+    {% csrf_token %}
+    <h2 class="ud-form__title">Edit Profile</h2>
+
+    <label class="ud-field">
+      <span class="ud-label">First name</span>
+      {{ form.first_name }}
+    </label>
+
+    <label class="ud-field">
+      <span class="ud-label">Last name</span>
+      {{ form.last_name }}
+    </label>
+
+    <label class="ud-field">
+      <span class="ud-label">Email</span>
+      {{ form.email }}
+    </label>
+
+    <div class="ud-form__actions">
+      <a href="{% url 'accounts:dashboard' %}" class="ud-btn ud-btn--light">Cancel</a>
+      <button type="submit" class="ud-btn ud-btn--primary">Save changes</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

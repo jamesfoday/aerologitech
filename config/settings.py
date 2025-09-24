@@ -34,10 +34,14 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     "apps.accounts",
-    "apps.core",
+    "apps.core.apps.CoreConfig",
     "apps.services",
     "apps.dashboard",
     "apps.orders",
+    "apps.messages.apps.AircarMessagesConfig",
+    "apps.invoices",
+    "django.contrib.humanize",
+   
 ]
 
 MIDDLEWARE = [
@@ -97,6 +101,10 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# --- Email (DEV) ---
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = "AeroLogicTech <no-reply@localhost>"
+
 
 AUTH_USER_MODEL = "accounts.User"
 
@@ -116,6 +124,10 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [ BASE_DIR / "static" ] 
 
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
+LOGIN_REDIRECT_URL = "/users/route-after-login/"
 
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

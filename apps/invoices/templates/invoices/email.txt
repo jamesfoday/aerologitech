@@ -1,0 +1,8 @@
+Hello {{ inv.user.get_full_name|default:inv.user.username }},
+
+Please find attached your invoice {{ inv.number }}.
+
+Total: {{ inv.total }} {{ inv.currency }}
+Issued: {{ inv.issued_at }}{% if inv.due_at %} | Due: {{ inv.due_at }}{% endif %}
+
+Thank you!

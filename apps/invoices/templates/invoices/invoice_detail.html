@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<style>
+  .page-wrap{max-width:980px;margin:20px auto;padding:0 12px;}
+  .back-link{display:inline-flex;align-items:center;gap:6px;color:#6b7280;text-decoration:none;font-weight:600}
+  .action-row{display:flex;justify-content:center;gap:26px;margin:22px 0}
+  .round-action{
+    width:70px;height:70px;border-radius:50%;
+    background:#2f80ed;color:#fff;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;text-decoration:none;
+    box-shadow:0 8px 22px rgba(26,39,68,.12)
+  }
+  .round-action i{font-size:20px;line-height:1}
+  .round-action span{font-size:11px;margin-top:4px;color:#e6efff}
+  @media (max-width:640px){.action-row{gap:14px}}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container page-wrap">
+  <div class="mb-3">
+    <a href="{% url 'invoices:list' %}" class="back-link">
+      <i class="bi bi-chevron-left"></i> Back
+    </a>
+  </div>
+
+  {# Reuse the styled invoice document partial (also used by PDF) #}
+  {% include "invoices/_invoice_doc.html" with inv=inv %}
+
+  <div class="action-row">
+    <!-- Share (native share sheet on mobile) -->
+    <a class="round-action" id="share-native" href="#" title="Share invoice" aria-label="Share invoice">
+      <i class="bi bi-share"></i>
+      <span>Share</span>
+    </a>
+
+    <!-- Download PDF (opens in new tab) -->
+    <a class="round-action"
+       href="{% url 'invoices:pdf' inv.pk %}"
+       target="_blank" rel="noopener"
+       title="Download PDF" aria-label="Download PDF">
+      <i class="bi bi-download"></i>
+      <span>Download</span>
+    </a>
+
+    <!-- Edit invoice -->
+    <a class="round-action" href="{% url 'invoices:update' inv.pk %}" title="Edit invoice" aria-label="Edit invoice">
+      <i class="bi bi-pencil"></i>
+      <span>Edit</span>
+    </a>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const shareBtn = document.getElementById("share-native");
+    if (shareBtn && navigator.share) {
+      shareBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        navigator.share({
+          title: "Invoice {{ inv.number }}",
+          text: "Please view your invoice here:",
+          url: "{{ request.build_absolute_uri|escapejs }}"
+        }).catch(err => {
+          console.log("Share cancelled", err);
+        });
+      });
+    } else {
+      // Fallback if Web Share API not supported
+      shareBtn.setAttribute(
+        "href",
+        "mailto:?subject=Invoice {{ inv.number }}&body={{ request.build_absolute_uri|escapejs }}"
+      );
+    }
+  })();
+</script>
+{% endblock %}
+</html>

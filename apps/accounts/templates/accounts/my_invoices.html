@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}My Invoices — Aircar{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/user_dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="ud-container">
+
+  {# Back button that routes to the correct hub (admin vs user) #}
+  {% include "includes/back_to_hub.html" %}
+
+  <section class="ud-panel">
+    <div class="ud-panel__head">
+      <h3>My Invoices</h3>
+    </div>
+
+    <div class="ud-panel__body">
+      {% if invoices %}
+        <ul class="ud-list">
+          {% for inv in invoices %}
+            <li class="ud-list__item">
+              <div>
+                <div class="ud-list__title">
+                  Invoice #{{ inv.number|default:inv.id }}
+                </div>
+
+                <div class="ud-list__meta">
+                  {# Issued date: created_at OR issued_at #}
+                  {% with d=inv.created_at|default:inv.issued_at %}
+                    {% if d %}Issued {{ d|date:"M d, Y" }}{% endif %}
+                  {% endwith %}
+
+                  {# If invoice relates to an order, show service/car name when present #}
+                  {% if inv.order %}
+                    {% if inv.order.service %} • {{ inv.order.service.name }}{% endif %}
+                    {% if inv.order.car %} • {{ inv.order.car.name }}{% endif %}
+                  {% endif %}
+                </div>
+              </div>
+
+              <div style="text-align:right">
+                {# Amount: amount OR total OR total_amount; show currency if present #}
+                {% with amt=inv.amount|default:inv.total|default:inv.total_amount %}
+                  <div class="ud-list__title">
+                    {% if inv.currency %}{{ inv.currency }}{% else %}€{% endif %}{{ amt|floatformat:2|intcomma }}
+                  </div>
+                {% endwith %}
+
+                <div class="ud-list__meta">
+                  {% if inv.paid or inv.paid_at %}
+                    <span style="color:#16a34a">Paid</span>
+                  {% elif inv.status %}
+                    <span>{{ inv.status|title }}</span>
+                  {% else %}
+                    <span style="color:#b91c1c">Unpaid</span>
+                  {% endif %}
+                </div>
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <div class="ud-empty">No invoices yet</div>
+      {% endif %}
+    </div>
+  </section>
+</div>
+{% endblock %}

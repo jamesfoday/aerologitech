@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<style>
+  .tile-input { background:#e9f0f7; border:1px solid rgba(0,0,0,.04); border-radius:12px; padding:12px 14px; }
+  .tile-label { color:#6b7280; font-weight:700; margin-bottom:6px; }
+  .create-btn { border-radius:999px; padding:.55rem 1.1rem; box-shadow:0 6px 14px rgba(16,185,129,.25); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="card p-4 round-24" style="border-radius:18px;">
+    <a href="{% url 'accounts:list' %}" class="text-decoration-none mb-3 d-inline-flex align-items-center" style="color:#6b7280;">
+      <i class="bi bi-chevron-left me-1"></i> Back
+    </a>
+
+    <div class="row g-4 align-items-start">
+      <div class="col-md-3 d-flex justify-content-center">
+        <div class="profile-avatar" style="width:96px;height:96px;background:#2f80ed;color:#fff;">
+          <i class="bi bi-person-fill" style="font-size:2rem;"></i>
+        </div>
+      </div>
+
+      <div class="col-md-9">
+        <form method="post" novalidate>
+          {% csrf_token %}
+          <div class="row g-4">
+            <div class="col-md-6">
+              <div class="tile-label">User name</div>
+              {{ form.username }}
+              {% if form.username.errors %}<div class="text-danger small mt-1">{{ form.username.errors|join:", " }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+              <div class="tile-label">Email address</div>
+              {{ form.email }}
+              {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors|join:", " }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+              <div class="tile-label">Full Name</div>
+              {{ form.full_name }}
+              {% if form.full_name.errors %}<div class="text-danger small mt-1">{{ form.full_name.errors|join:", " }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+              <div class="tile-label">Phone Number</div>
+              {{ form.phone }}
+              {% if form.phone.errors %}<div class="text-danger small mt-1">{{ form.phone.errors|join:", " }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+              <div class="tile-label">Password</div>
+              {{ form.password1 }}
+              {% if form.password1.errors %}<div class="text-danger small mt-1">{{ form.password1.errors|join:", " }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+              <div class="tile-label">Password confirmation</div>
+              {{ form.password2 }}
+              {% if form.password2.errors %}<div class="text-danger small mt-1">{{ form.password2.errors|join:", " }}</div>{% endif %}
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-end mt-4">
+            <button class="btn btn-success create-btn" type="submit">
+              <i class="bi bi-check2-circle me-1"></i> Create
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+
+
+</html>

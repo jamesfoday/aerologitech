@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'css/cars.css' %}?v=4">
+  <link rel="stylesheet" href="{% static 'css/booking.css' %}?v=2">
+{% endblock %}
+
+{% block content %}
+  <!-- Breadcrumbs / Back -->
+
+
+  <div class="cars-viewport">
+    <article class="carcard" itemscope itemtype="https://schema.org/Vehicle">
+      <meta itemprop="name" content="{{ car.name }}">
+
+      <!-- Hero image -->
+      <div class="carcard-hero">
+        {% if car.image %}
+          <img src="{{ car.image.url }}" alt="{{ car.name }}" class="carcard-hero__img" itemprop="image">
+        {% else %}
+          <div class="carcard-hero__placeholder">No image</div>
+        {% endif %}
+      </div>
+
+      <div class="carcard-divider"></div>
+
+      <!-- Head: title / price / CTA -->
+      <header class="carcard-head">
+        <div class="carcard-head__left">
+          <h1 class="carcard-title" itemprop="model">{{ car.name }}</h1>
+          <span class="carcard-chip">or equivalent</span>
+        </div>
+        <div class="carcard-head__right">
+          <button
+            id="open-booking-hero"
+            class="cars-btn cars-btn-primary carcard-book"
+            data-object-type="car"
+            data-object-id="{{ car.pk }}"
+            data-object-name="{{ car.name }}"
+            data-price="{{ car.price }}"
+            type="button"
+            aria-label="Book {{ car.name }}"
+          >Book Now</button>
+          <div class="carcard-price" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+            <meta itemprop="priceCurrency" content="EUR" />
+            <span itemprop="price">{{ car.price|floatformat:2 }}</span> €
+          </div>
+        </div>
+      </header>
+
+      <!-- Specs grid -->
+      <section class="carcard-specs" aria-labelledby="specs-heading">
+        <h2 id="specs-heading" class="sr-only">Specifications</h2>
+        <div class="spec-tile"><span class="spec-key">Seats</span><span class="spec-sep">:</span><span class="spec-val" itemprop="seatingCapacity">{{ car.seats|default:"—" }}</span></div>
+        <div class="spec-tile"><span class="spec-key">Transmission</span><span class="spec-sep">:</span><span class="spec-val">{{ car.get_transmission_display|default:"—" }}</span></div>
+        <div class="spec-tile"><span class="spec-key">Luggage</span><span class="spec-sep">:</span><span class="spec-val">{{ car.luggage|default:"—" }}{% if car.luggage %} Suitcases{% endif %}</span></div>
+        <div class="spec-tile"><span class="spec-key">Tank</span><span class="spec-sep">:</span><span class="spec-val">{{ car.tank|default:"—" }}</span></div>
+        {% if car.category %}<div class="spec-tile"><span class="spec-key">Category</span><span class="spec-sep">:</span><span class="spec-val">{{ car.category.name }}</span></div>{% endif %}
+      </section>
+
+      <!-- Actions -->
+      <div class="carcard-actions">
+        {% if request.user.is_staff %}
+          <a href="{% url 'services:car_list' %}" class="cars-btn cars-btn-light">Back to list</a>
+          <a href="{% url 'services:car_update' car.pk %}" class="cars-btn cars-btn-primary">Edit</a>
+        {% endif %}
+      </div>
+    </article>
+  </div>
+
+  {# Reusable booking modal with data attributes #}
+  {% include "services/partials/booking_modal.html" with object=car object_type='car' %}
+{% endblock %}
+
+{% block body_end %}
+  <script src="{% static 'js/booking.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/cars.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="cars-viewport p-4 round-24">
+  <div class="cars-card">
+    <div class="cars-topbar">
+      <a href="/dashboard/" class="cars-back"> <i class="bi bi-chevron-left"></i> Back</a>
+      <h1 class="cars-title">Car rental</h1>
+      <a href="{% url 'services:car_create' %}" class="cars-btn cars-btn-primary">
+        <span class="cars-btn__label">Create</span>
+        <span class="cars-btn__icon" aria-hidden="true">+</span>
+      </a>
+    </div>
+
+    <form method="get" class="cars-search" role="search">
+      <input name="q" value="{{ q }}" class="cars-input" type="search"
+             placeholder="Search cars (name, category, transmission)" />
+      <button class="cars-search-btn" type="submit" aria-label="Search">Search</button>
+    </form>
+
+    {% if page_obj and page_obj.object_list %}
+      <div class="cars-list">
+        {% for car in page_obj.object_list %}
+          <div class="cars-row">
+            <div class="cars-row__left">
+              <div class="cars-row__name">{{ car.name }}</div>
+              <div class="cars-row__meta">
+                {% if car.category %}{{ car.category }} • {% endif %}
+                {{ car.get_transmission_display }} • {{ car.seats }} seats • {{ car.luggage }} luggage
+              </div>
+            </div>
+
+            <div class="cars-row__right">
+              <!-- View (detail page) -->
+              <a href="{% url 'services:car_detail' car.pk %}" class="cars-view" title="View details">
+                <i class="bi bi-eye"></i>
+              </a>
+
+              <!-- Edit -->
+              <a href="{% url 'services:car_update' car.pk %}" class="cars-view">Edit</a>
+
+              <!-- Delete -->
+              <form method="post"
+                    action="{% url 'services:car_delete' car.pk %}"
+                    class="cars-delete-form d-inline">
+                {% csrf_token %}
+                <button type="submit" class="cars-btn-delete"
+                        data-confirm="Delete {{ car.name }}?">
+                  Delete
+                </button>
+              </form>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <nav class="cars-pager" aria-label="Cars pages">
+        <a class="cars-page {% if not page_obj.has_previous %}is-disabled{% endif %}"
+           href="{% if page_obj.has_previous %}?q={{ q }}&page={{ page_obj.previous_page_number }}{% else %}#{% endif %}">
+          Previous
+        </a>
+        <span class="cars-page is-info">
+          Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </span>
+        <a class="cars-page {% if not page_obj.has_next %}is-disabled{% endif %}"
+           href="{% if page_obj.has_next %}?q={{ q }}&page={{ page_obj.next_page_number }}{% else %}#{% endif %}">
+          Next
+        </a>
+      </nav>
+
+    {% else %}
+      <div class="cars-empty">
+        No cars{% if q %} found for “{{ q }}”{% endif %}. <a href="{% url 'services:car_create' %}">Create one</a>.
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<script src="{% static 'js/cars.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/cars.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="card p-4 round-24" style="border-radius:18px;">
+
+    <!-- Top bar -->
+    <div class="row align-items-center mb-3 pb-4">
+      <div class="col-auto">
+        <a href="/dashboard/" class="d-inline-flex align-items-center text-decoration-none" style="color:#6b7280;">
+          <i class="bi bi-chevron-left me-1"></i> <span class="fw-semibold">Back</span>
+        </a>
+      </div>
+
+      <div class="col text-center">
+        <h5 class="mb-0">Invoice</h5>
+      </div>
+
+      <div class="col-auto text-end">
+        <a href="{% url 'invoices:create' %}" class="btn create-buttn rounded-pill px-3" title="Create">
+          <i class="bi bi-plus-circle"></i>
+          <span class="visually-hidden">Create</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Search -->
+    <form method="get" class="mx-auto" style="max-width:600px;">
+      <div class="input-group mb-4">
+        <input name="q" value="{{ q }}" class="form-control form-control-lg"
+               placeholder="Search invoices or users…" aria-label="Search"
+               style="border-radius:12px 0 0 12px;">
+        <button class="btn btn-outline-secondary btn-lg" type="submit" style="border-radius:0 12px 12px 0;">
+          <i class="bi bi-search"></i>
+          <span class="visually-hidden">Search</span>
+        </button>
+      </div>
+    </form>
+
+    <!-- List -->
+    <div class="mt-2">
+      {% for inv in invoices %}
+        <div class="list-tile d-flex align-items-center justify-content-between">
+          <div class="d-flex flex-column">
+            <div class="fw-semibold" style="color:#374151;">{{ inv.number }}</div>
+            <div class="small text-muted">
+              {{ inv.user.get_full_name|default:inv.user.username }} • {{ inv.status }} •
+              {{ inv.amount }} {{ inv.currency }}
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+
+            <!-- View -->
+            <a href="{% url 'invoices:detail' inv.pk %}"
+               class="btn btn-light border rounded-pill px-3"
+               title="View">
+              <i class="bi bi-eye"></i>
+              <span class="visually-hidden">View</span>
+            </a>
+
+            <!-- Edit (staff only) -->
+            {% if request.user.is_staff %}
+              <a href="{% url 'invoices:update' inv.pk %}"
+                 class="btn btn-light border rounded-pill px-3"
+                 title="Edit">
+                <i class="bi bi-pencil-square"></i>
+                <span class="visually-hidden">Edit</span>
+              </a>
+
+              <!-- Delete (POST) -->
+              <form action="{% url 'invoices:delete' inv.pk %}" method="post" class="d-inline"
+                    onsubmit="return confirm('Delete {{ inv.number }}?');">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger rounded-pill px-3" title="Delete">
+                  <i class="bi bi-trash"></i>
+                  <span class="visually-hidden">Delete</span>
+                </button>
+              </form>
+            {% endif %}
+
+          </div>
+        </div>
+      {% empty %}
+        <div class="empty text-center text-muted py-3">No invoices yet.</div>
+      {% endfor %}
+    </div>
+
+    <!-- Pagination (Cars-style: Previous | Page X of Y | Next) -->
+ <nav class="cars-pager" aria-label="Invoices pages">
+  <a class="cars-page {% if not page_obj.has_previous %}is-disabled{% endif %}"
+     href="{% if page_obj.has_previous %}?{% if q %}q={{ q|urlencode }}&{% endif %}page={{ page_obj.previous_page_number }}{% else %}#{% endif %}">
+    Previous
+  </a>
+
+  <span class="cars-page is-info">
+    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+  </span>
+
+  <a class="cars-page {% if not page_obj.has_next %}is-disabled{% endif %}"
+     href="{% if page_obj.has_next %}?{% if q %}q={{ q|urlencode }}&{% endif %}page={{ page_obj.next_page_number }}{% else %}#{% endif %}">
+    Next
+  </a>
+</nav>
+
+
+
+  </div>
+</div>
+{% endblock %}

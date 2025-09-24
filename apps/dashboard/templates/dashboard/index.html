@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 
 {% block content %}
-<div class="container-fluid mt-3">
+<div class="container-fluid mt-3 mb-5">
   <div class="topbar">
     <span class="me-2 fw-semibold">Logout</span>
     <span class="btn btn-light btn-sm round-24 shadow-soft">⏻</span>
@@ -33,32 +33,47 @@
   </a>
 </div>
 
+      <div class="col-6 mb-3">
+  <a href="/orders/" class="text-decoration-none">
+    <div class="shortcut orders"><i class="bi bi-bag"></i></div>
+    <div class="lbl">Orders</div>
+  </a>
+</div>
+
+  <div class="col-6">
+  <a href="/messages/" class="text-decoration-none">
+    <div class="shortcut msgs"><i class="bi bi-chat"></i></div>
+    <div class="lbl">Message</div>
+  </a>
+</div>
+
           <div class="col-6 mb-3">
-            <div class="shortcut orders"><i class="bi bi-bag"></i></div>
-            <div class="lbl">Orders</div>
-          </div>
-          <div class="col-6 mb-3">
-            <div class="shortcut msgs"><i class="bi bi-chat"></i></div>
-            <div class="lbl">Message</div>
-          </div>
-          <div class="col-6 mb-3">
-            <div class="shortcut invoice"><i class="bi bi-receipt"></i></div>
+            <a href="/invoices/" class="text-decoration-none" >
+              <div class="shortcut invoice"><i class="bi bi-receipt"></i></div>
             <div class="lbl">Invoice</div>
+            </a>
+            
           </div>
-          <div class="col-6 mb-1">
-            <div class="shortcut services"><i class="bi bi-plus-circle"></i></div>
-            <div class="lbl">Services</div>
-          </div>
-          <div class="col-6 mb-1">
-            <div class="shortcut addcar"><i class="bi bi-car-front"></i></div>
-            <div class="lbl">Add car</div>
-          </div>
+         <div class="col-6 mb-1">
+  <a href="{% url 'services:list' %}" class="text-decoration-none">
+    <div class="shortcut services"><i class="bi bi-plus-circle"></i></div>
+    <div class="lbl">Services</div>
+  </a>
+</div>
+
+         <div class="col-6 mb-1">
+  <a href="{% url 'services:car_list' %}" class="text-decoration-none">
+    <div class="shortcut addcar"><i class="bi bi-car-front"></i></div>
+    <div class="lbl">Add car</div>
+  </a>
+</div>
+
         </div>
       </div>
     </div>
 
     <!-- Right: Main dashboard -->
-    <div class="col-md-9">
+    <div class="col-md-9 mt-4">
       <!-- Sales -->
       <div class="card p-3 mb-3">
         <div class="section-head">

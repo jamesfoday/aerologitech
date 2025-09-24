@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/public_about.css' %}">
+<link rel="stylesheet" href="{% static 'css/footer.css' %}">
+
+{% endblock %}
+
+{% block content %}
+<div class="about-container">
+  <!-- Hero -->
+  <section class="about-hero">
+    <img src="{% static 'images/about-hero.jpg' %}" alt="About Aerologictech" class="about-hero__img">
+    <div class="about-hero__label">About us</div>
+  </section>
+
+  <!-- Intro Card -->
+  <article class="about-card">
+    <h2 class="about-card__title">About us</h2>
+    <p>
+      Aerologictech Limited supports companies and individuals by constantly striving to offer
+      innovative solutions that make their air and travels easier and increase their efficiency
+      and productivity.
+    </p>
+    <p>
+      Aerologictech Limited offers a tailor-made welcome and support service at Banjul International
+      Airport. We ensure comfort and serenity during guests’ arrival or departure at the airport.
+    </p>
+  </article>
+
+  <!-- Story Card -->
+  <article class="about-card">
+    <p>
+      Journey becomes an easy, fast and hassle-free experience with our hostesses. Our efforts are
+      primarily focused on helping to bypass long lines, remove language barriers and make passing
+      through the airport easy. All the most minor needs are anticipated, and all the formalities
+      related to the travel become a moment of pleasure.
+    </p>
+    <p>
+      Whether it is arrival or departure at the Banjul International Airport, the expertise and rigour
+      of our hostesses will transform guests’ difficulties into solutions. Recruited according to
+      criteria specific to our business, they provide every guest with excellent service. Smiling,
+      discreet and efficient, they welcome you and accompany you 365 days a year and 24 hours a day.
+    </p>
+    <p>
+      Aerologictech Limited enabling development on the international scene. Thanks to this cooperation,
+      fostered by a shared vision of the future. The two companies are helping to structure the Gambian
+      scene in the global security and services industry.
+    </p>
+  </article>
+
+  <!-- Map card -->
+  <section class="about-map">
+    <img src="{% static 'images/world-map.png' %}" alt="World map" class="about-map__img">
+    <div class="about-map__caption">Book Your Next Adventure with us</div>
+  </section>
+
+</div>
+
+ <!-- Footer  -->
+  <footer class="site-footer">
+    <div class="site-footer__bar">
+      <div class="site-footer__grid">
+        <div class="footer-col">
+          <div class="footer-title">Aircar</div>
+          <div class="footer-text">Seamless airport services & car rentals.</div>
+          <div class="footer-text">Mon–Sun • 24/7</div>
+        </div>
+
+        <div class="footer-col">
+          <div class="footer-title">Links</div>
+          <a class="footer-link" href="{% url 'services:list' %}">Services</a>
+          <a class="footer-link" href="{% url 'services:car_list' %}">Cars</a>
+          <a class="footer-link" href="/dashboard/">Dashboard</a>
+        </div>
+
+        <div class="footer-col">
+          <div class="footer-title">Contact</div>
+          <div class="footer-text">support@example.com</div>
+          <div class="footer-text">+33 1 23 45 67 89</div>
+          <div class="footer-social">
+            <a href="#" class="soc" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+            <a href="#" class="soc" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+            <a href="#" class="soc" aria-label="Twitter"><i class="bi bi-twitter-x"></i></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+{% endblock %}
+
+
+{% block extra_scripts %}
+<script src="{% static 'js/public_home.js' %}" defer></script>
+{% endblock %}

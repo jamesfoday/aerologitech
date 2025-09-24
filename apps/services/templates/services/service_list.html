@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/services.css' %}?v=8">
+{% endblock %}
+
+{% block content %}
+<div class="container wrap">
+  <div class="card p-4 round-24">
+    <div class="topbar">
+      <a href="/dashboard/" class="back-link">
+        <i class="bi bi-chevron-left"></i> Back
+      </a>
+
+      <div class="title">Services</div>
+
+      <!-- keep your existing Create link unchanged -->
+      <a href="{% url 'services:create' %}" class="btn-create">
+        Create <i class="bi bi-plus"></i>
+      </a>
+    </div>
+
+    <form method="get" class="searchbar" role="search">
+      <input type="search" name="q" value="{{ q }}" placeholder="Search services…" aria-label="Search services">
+      <button type="submit" aria-label="Search">
+        <i class="bi bi-search"></i>
+      </button>
+    </form>
+
+    {% if services %}
+      <div class="list">
+      {% for svc in services %}
+  <div class="row-item">
+    <!-- Service name links to detail -->
+    <a class="d-flex align-items-center text-decoration-none flex-grow-1 justify-content-between"
+       href="{% url 'services:detail' svc.pk %}">
+      <span class="name">{{ svc.name }}</span>
+      <span class="view">
+        <i class="bi bi-eye"></i>
+        <small>View</small>
+      </span>
+    </a>
+
+    {% if request.user.is_staff %}
+      <!-- Edit button -->
+      <a href="{% url 'services:edit' svc.pk %}" class="btn btn-outline-primary btn-sm ms-2" title="Edit">
+        <i class="bi bi-pencil"></i>
+      </a>
+
+      <!-- Delete button -->
+      <form method="post" action="{% url 'services:delete' svc.pk %}"
+            onsubmit="return confirm('Delete this service permanently?');" class="ms-2">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete">
+          <i class="bi bi-trash"></i>
+        </button>
+      </form>
+    {% endif %}
+  </div>
+{% endfor %}
+
+      </div>
+    {% else %}
+      <div class="empty">No services found.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

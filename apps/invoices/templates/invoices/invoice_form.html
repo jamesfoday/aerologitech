@@ -1,0 +1,292 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<style>
+  :root{
+    --gap-lg:18px; --gap-md:12px; --gap-sm:8px;
+    --brand:#2f80ed; --ink:#111827; --muted:#6b7280; --tile:#edf4fa;
+  }
+
+  .inv-wrap { max-width: 1060px; margin: 24px auto; padding: 0 12px; }
+  .inv-card { background:#fff; border-radius:18px; padding:28px; box-shadow:0 8px 22px rgba(26,39,68,.06); }
+  .inv-title { text-align:center; font-weight:700; color:var(--brand); }
+
+  .field { display:flex; flex-direction:column; gap:8px; }
+  .field-label { font-weight:600; color:var(--muted); font-size:14px; }
+  .tile { background:var(--tile); border-radius:10px; padding:12px 14px; display:flex; align-items:center; gap:10px; }
+  .tile input[type="text"],
+  .tile input[type="number"],
+  .tile input[type="date"],
+  .tile select,
+  .tile textarea { border:none; background:transparent; width:100%; outline:none; font-size:16px; } /* 16px to avoid iOS zoom */
+
+  .errorlist { margin:6px 0 0; padding:0; list-style:none; color:#b91c1c; font-size:13px; }
+  .help-text { font-size:12px; color:#9ca3af; }
+
+  .actions { display:flex; justify-content:flex-end; flex-wrap:wrap; gap:12px; margin-top:22px; }
+  .btn-primary-soft { background:var(--brand); color:#fff; border:none; border-radius:10px; padding:12px 22px; font-weight:700; }
+  .btn-secondary-soft { background:#eef2f7; color:#374151; border:none; border-radius:10px; padding:12px 18px; font-weight:600; }
+
+  .grid-3 { display:grid; grid-template-columns: repeat(3, 1fr); gap:var(--gap-lg); }
+  .grid-2 { display:grid; grid-template-columns: repeat(2, 1fr); gap:var(--gap-lg); }
+  @media (max-width: 992px) { .grid-3 { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 640px) {
+    .grid-3, .grid-2 { grid-template-columns: 1fr; gap:var(--gap-md); }
+    .inv-card { padding:20px; }
+  }
+
+  .back-link { color:var(--muted); text-decoration:none; display:inline-flex; align-items:center; gap:6px; }
+  .line { height:1px; background:linear-gradient(90deg,#f1f5f9,#e5e7eb,#f1f5f9); margin:14px 0 24px; }
+
+  /* ---------- Items: desktop grid ---------- */
+  .items-head { display:grid; grid-template-columns: 1fr 110px 140px 140px 40px; gap:12px; font-weight:700; color:#1f2937; }
+  .items-row  { display:grid; grid-template-columns: 1fr 110px 140px 140px 40px; gap:12px; align-items:center; margin-top:10px; }
+  .items-row .tile { background:#f1f5f9; }
+  .items-row .num { text-align:right; }
+  .items-row .total-figure { text-align:right; padding-right:6px; font-weight:700; color:var(--ink); }
+  .items-toolbar { display:flex; justify-content:space-between; align-items:center; margin-top:18px; gap:12px; flex-wrap:wrap; }
+  .btn-add { background:var(--brand); color:#fff; border:none; border-radius:10px; padding:10px 14px; font-weight:700; }
+  .btn-del { color:#b91c1c; border:none; background:transparent; width:44px; height:44px; font-size:22px; line-height:1; }
+
+  /* Number inputs */
+  input[type="number"] { appearance: textfield; text-align:right; }
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button { appearance: none; margin: 0; }
+  @supports not (appearance: textfield) {
+    input[type="number"] { -moz-appearance: textfield; } /* fallback */
+  }
+
+  /* ---------- Items: mobile cards ---------- */
+  @media (max-width: 640px) {
+    .items-head { display:none; }
+    .items-row  {
+      grid-template-columns: 1fr; gap:var(--gap-sm);
+      background:#f8fafc; border:1px solid #e5e7eb; border-radius:12px; padding:10px;
+    }
+    .items-row .tile { background:#fff; }
+    .items-row .tile[data-label]::before{
+      content: attr(data-label);
+      display:block; font-size:12px; color:var(--muted); margin-bottom:4px;
+      font-weight:600;
+    }
+    .items-row .total-figure { font-size:16px; }
+    .btn-del { align-self:flex-start; width:auto; height:auto; padding:6px 10px; border:1px solid #fee2e2; border-radius:8px; }
+  }
+
+  /* Send-now row */
+  .send-row{display:flex; align-items:center; gap:10px; margin-top:18px;}
+  .send-row input[type="checkbox"]{ width:18px; height:18px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container inv-wrap">
+  <div class="inv-card">
+
+    <div class="d-flex align-items-center justify-content-between">
+      <a href="{% url 'invoices:list' %}" class="back-link"><i class="bi bi-chevron-left"></i> Back</a>
+      <div class="inv-title">{% if inv %}Edit Invoice{% else %}Create an Invoice{% endif %}</div>
+      <span></span>
+    </div>
+
+    <div class="line"></div>
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+
+      <!-- Top row: Customer / Status / Currency + Tax Rate -->
+      <div class="grid-3">
+        <div class="field">
+          <label class="field-label" for="{{ form.user.id_for_label }}">Customer</label>
+          <div class="tile">{{ form.user }}</div>
+          {{ form.user.errors }}
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="{{ form.status.id_for_label }}">Status</label>
+          <div class="tile">{{ form.status }}</div>
+          {{ form.status.errors }}
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label class="field-label" for="{{ form.currency.id_for_label }}">Currency</label>
+            <div class="tile">{{ form.currency }}</div>
+            {{ form.currency.errors }}
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="{{ form.tax_rate.id_for_label }}">Tax Rate (%)</label>
+            <div class="tile">{{ form.tax_rate }}</div>
+            {{ form.tax_rate.errors }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Dates & Note -->
+      <div class="grid-3" style="margin-top:18px;">
+        <div class="field">
+          <label class="field-label" for="{{ form.issued_at.id_for_label }}">Issued at</label>
+          <div class="tile">{{ form.issued_at }}</div>
+          {{ form.issued_at.errors }}
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="{{ form.due_at.id_for_label }}">Due at</label>
+          <div class="tile">{{ form.due_at }}</div>
+          {{ form.due_at.errors }}
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="{{ form.note.id_for_label }}">Note</label>
+          <div class="tile">{{ form.note }}</div>
+          {{ form.note.errors }}
+        </div>
+      </div>
+
+      <!-- ===== Line items (formset) ===== -->
+      {{ formset.management_form }}
+
+      <div class="items-toolbar">
+        <h6 class="mb-0">Items</h6>
+        <button type="button" id="add-item" class="btn-add">
+          <i class="bi bi-plus-circle me-1"></i>Add item
+        </button>
+      </div>
+
+      <!-- Head (desktop/tablet) -->
+      <div class="items-head" style="margin-top:10px;">
+        <div>Description</div>
+        <div class="num">Qty</div>
+        <div class="num">Unit price</div>
+        <div class="num">Line total</div>
+        <div></div>
+      </div>
+
+      <!-- Rows -->
+      <div id="items-container">
+        {% for f in formset.forms %}
+        <div class="items-row item-row">
+          <div class="tile" data-label="Description">
+            {{ f.description }}
+            {{ f.description.errors }}
+          </div>
+
+          <div class="tile" data-label="Qty">
+            {{ f.qty }}
+            {{ f.qty.errors }}
+          </div>
+
+          <div class="tile" data-label="Unit price">
+            {{ f.unit_price }}
+            {{ f.unit_price.errors }}
+          </div>
+
+          <div class="tile total-figure" data-label="Line total">0.00</div>
+
+          <div style="display:flex; align-items:center; justify-content:center;">
+            {% if f.DELETE %}{{ f.DELETE }}{% endif %}
+            <button type="button" class="btn-del remove-item" title="Remove">×</button>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      {# Template row for JS cloning (uses __prefix__) #}
+      <template id="empty-item-template">
+        <div class="items-row item-row">
+          <div class="tile" data-label="Description">
+            {{ formset.empty_form.description }}
+          </div>
+          <div class="tile" data-label="Qty">
+            {{ formset.empty_form.qty }}
+          </div>
+          <div class="tile" data-label="Unit price">
+            {{ formset.empty_form.unit_price }}
+          </div>
+          <div class="tile total-figure" data-label="Line total">0.00</div>
+          <div style="display:flex; align-items:center; justify-content:center;">
+            {% if formset.can_delete %}{{ formset.empty_form.DELETE }}{% endif %}
+            <button type="button" class="btn-del remove-item" title="Remove">×</button>
+          </div>
+        </div>
+      </template>
+
+      <!-- Send-now checkbox -->
+      <div class="send-row">
+        {{ form.send_now }}
+        <label for="{{ form.send_now.id_for_label }}" style="margin:0; color:#374151;">
+          {{ form.send_now.label }}
+        </label>
+      </div>
+
+      <div class="actions">
+        <a href="{% url 'invoices:list' %}" class="btn-secondary-soft">Cancel</a>
+        <button type="submit" class="btn-primary-soft">{% if inv %}Save{% else %}Create{% endif %}</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  (function () {
+    // Uppercase currency as you type (UX nicety)
+    const cur = document.getElementById('{{ form.currency.id_for_label }}');
+    if (cur) cur.addEventListener('input', function () { this.value = this.value.toUpperCase(); });
+
+    const container = document.getElementById('items-container');
+    const addBtn = document.getElementById('add-item');
+    const tmpl = document.getElementById('empty-item-template');
+    const totalForms = document.querySelector('[name="{{ formset.prefix }}-TOTAL_FORMS"]') ||
+                       document.querySelector('[name$="-TOTAL_FORMS"]');
+
+    function toNum(v) {
+      const n = parseFloat(String(v).replace(',', '.'));
+      return isNaN(n) ? 0 : n;
+    }
+
+    function updateRowTotal(row) {
+      const qty = toNum(row.querySelector('input[name$="-qty"]')?.value);
+      const price = toNum(row.querySelector('input[name$="-unit_price"]')?.value);
+      row.querySelector('.total-figure').textContent = (qty * price).toFixed(2);
+    }
+
+    function wireRow(row) {
+      row.querySelectorAll('input[name$="-qty"], input[name$="-unit_price"]').forEach(inp => {
+        inp.addEventListener('input', () => updateRowTotal(row));
+        updateRowTotal(row); // init
+      });
+
+      const delBtn = row.querySelector('.remove-item');
+      delBtn?.addEventListener('click', () => {
+        const delField = row.querySelector('input[type="checkbox"][name$="-DELETE"]');
+        if (delField) {
+          delField.checked = true; // mark for deletion
+          row.style.display = 'none';
+        } else {
+          row.remove();
+          const count = container.querySelectorAll('.item-row').length;
+          if (totalForms) totalForms.value = count;
+        }
+      });
+    }
+
+    // Wire existing rows (and compute totals)
+    container.querySelectorAll('.item-row').forEach(wireRow);
+
+    // Add new row
+    addBtn?.addEventListener('click', () => {
+      const index = parseInt(totalForms.value, 10);
+      const html = tmpl.innerHTML.replaceAll('__prefix__', index);
+      const holder = document.createElement('div');
+      holder.innerHTML = html.trim();
+      const newRow = holder.firstElementChild;
+      container.appendChild(newRow);
+      totalForms.value = index + 1;
+      wireRow(newRow);
+    });
+  })();
+</script>
+{% endblock %}

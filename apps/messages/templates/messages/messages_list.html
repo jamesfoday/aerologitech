@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  {# Back button that routes to user dashboard or admin dashboard automatically #}
+  {% include "includes/back_to_hub.html" %}
+
+  <div class="card p-4 round-24" style="border-radius:18px;">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-3">
+      <h5 class="mx-auto mb-0">Chat</h5>
+
+      <form method="get" class="ms-auto" style="max-width:420px;width:100%;">
+        <div class="input-group">
+          <input name="q" value="{{ q }}" class="form-control form-control-lg"
+                 placeholder="Search users or messages…" aria-label="Search messages"
+                 style="border-radius:12px 0 0 12px;">
+          <button class="btn btn-outline-secondary btn-lg" type="submit" style="border-radius:0 12px 12px 0;">
+            <i class="bi bi-search"></i>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <div class="mt-3">
+      {% for u in users %}
+        <a href="{% url 'messages:thread' u.id %}" class="text-decoration-none">
+          <div class="list-tile d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-3">
+              <div class="profile-avatar d-flex align-items-center justify-content-center"
+                   style="width:42px;height:42px;border-radius:50%;background:#2f80ed;color:#fff;">
+                <i class="bi bi-person-fill"></i>
+              </div>
+              <div>
+                <div class="fw-semibold" style="color:#374151;">
+                  {{ u.get_full_name|default:u.username }}
+                </div>
+                <div class="small text-muted">
+                  {{ u.last_message_body|default_if_none:""|truncatechars:60 }}
+                </div>
+              </div>
+            </div>
+
+            <div class="text-end" style="min-width:70px;">
+              {% if u.last_message_at %}
+                <div class="small text-muted">{{ u.last_message_at|time:"H:i" }}</div>
+              {% endif %}
+              {% with unread=u.unread|default_if_none:0|add:0 %}
+                {% if unread %}
+                  <span class="badge rounded-pill" style="background:#2f80ed;color:#fff;">{{ unread }}</span>
+                {% endif %}
+              {% endwith %}
+            </div>
+          </div>
+        </a>
+      {% empty %}
+        <div class="empty text-center text-muted py-3">No conversations yet.</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

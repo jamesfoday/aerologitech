@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% load static get_item %}
+
+{% block title %}My Receipts — Aircar{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/user_dashboard.css' %}">
+<style>
+  .rcpt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+  .rcpt{background:#fff;border-radius:12px;box-shadow:var(--shadow);padding:14px}
+  .rcpt-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .rcpt-title{font-weight:800}
+  .rcpt-meta{color:#6b7280;font-size:13px}
+  .qr{width:100px;height:100px;margin-top:8px}
+  .qr-code-text{word-break:break-all;color:#6b7280;font-size:12px;margin-top:6px}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ud-container">
+  <section class="ud-panel">
+    <div class="ud-panel__head" style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+      {% include "includes/back_to_hub.html" %}
+      <h3 style="margin:0">My Receipts</h3>
+      <span aria-hidden="true"></span>
+    </div>
+
+    <div class="ud-panel__body">
+      {% if invoices %}
+        <div class="rcpt-grid">
+          {% for inv in invoices %}
+            <article class="rcpt">
+              <div class="rcpt-head">
+                <div class="rcpt-title">Receipt #{{ inv.id }}</div>
+                <div class="rcpt-title">{{ inv.amount }}€</div>
+              </div>
+              <div class="rcpt-meta">
+                Paid on {{ inv.created_at|date:"M d, Y" }}
+                {% if inv.order and inv.order.service %} • {{ inv.order.service.name }}{% endif %}
+                {% if inv.order and inv.order.car %} • {{ inv.order.car.name }}{% endif %}
+              </div>
+              {# FIX: use get_item properly to fetch token by invoice id #}
+              <div class="qr" data-code="{{ qr_tokens|get_item:inv.id }}"></div>
+              <div class="qr-code-text">{{ qr_tokens|get_item:inv.id }}</div>
+            </article>
+          {% endfor %}
+        </div>
+
+      {% elif orders %}
+        <!-- Fallback if no Invoice model exists: show orders with QR token -->
+        <div class="rcpt-grid">
+          {% for o in orders %}
+            <article class="rcpt">
+              <div class="rcpt-head">
+                <div class="rcpt-title">Order #{{ o.id }}</div>
+              </div>
+              <div class="rcpt-meta">
+                {% if o.service %}{{ o.service.name }}{% endif %}
+                {% if o.car %}{% if o.service %} • {% endif %}{{ o.car.name }}{% endif %}
+                {% if o.start_date %} • {{ o.start_date }}{% endif %}
+                {% if o.end_date %} – {{ o.end_date }}{% endif %}
+              </div>
+              <div class="qr" data-code="{{ qr_tokens|get_item:o.id }}"></div>
+              <div class="qr-code-text">{{ qr_tokens|get_item:o.id }}</div>
+            </article>
+          {% endfor %}
+        </div>
+
+      {% else %}
+        <div class="ud-empty">No receipts yet</div>
+      {% endif %}
+    </div>
+  </section>
+</div>
+
+<!-- Tiny QR generator -->
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script>
+  document.querySelectorAll('.qr[data-code]').forEach(function(el){
+    var code = el.getAttribute('data-code');
+    if (!code) return;
+    new QRCode(el, { text: code, width: 100, height: 100 });
+  });
+</script>
+{% endblock %}

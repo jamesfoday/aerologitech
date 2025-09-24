@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="card p-0 chat-shell">  
+    <div class="row g-0">
+
+      <!-- Sidebar (desktop only) -->
+      <div class="col-lg-4 d-none d-lg-block p-3">
+        <div class="sidebar no-border"> 
+          <div class="sidebar-header d-flex align-items-center justify-content-between mb-2">
+            <!-- <a href="{% url 'messages:list' %}" class="btn-back">
+              <i class="bi bi-chevron-left"></i>
+              <span class="ms-1">Back</span>
+            </a> -->
+          </div>
+
+          {% for u in users_sidebar %}
+            <a href="{% url 'messages:thread' u.id %}" class="text-decoration-none">
+              <div class="sidebar-tile {% if u.id == other.id %}active{% endif %}">
+                <div class="me-3 sidebar-main">
+                  <div class="sidebar-name text-truncate">{{ u.get_full_name|default:u.username }}</div>
+                  <div class="sidebar-snippet text-truncate">
+                    {{ u.last_message_body|default_if_none:""|truncatechars:48 }}
+                  </div>
+                </div>
+                <div class="text-end sidebar-meta">
+                  {% if u.last_message_at %}
+                    <div class="sidebar-time">{{ u.last_message_at|time:"H:i" }}</div>
+                  {% endif %}
+                  {% with unread=u.unread|default_if_none:0|add:0 %}
+                    {% if unread %}
+                      <span class="badge rounded-pill sidebar-badge">{{ unread }}</span>
+                    {% endif %}
+                  {% endwith %}
+                </div>
+              </div>
+            </a>
+          {% empty %}
+            <div class="text-muted small">No conversations yet.</div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Conversation pane -->
+      <div class="col-lg-8 p-3 ">
+        <!-- Header: back button always goes to list (also visible on desktop) -->
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <a href="{% url 'messages:list' %}" class="btn-back">
+            <i class="bi bi-chevron-left"></i><span class="ms-1 d-none d-lg-inline">Back</span>
+          </a>
+          <div class="chat-user">
+            <div class="chat-avatar"><i class="bi bi-person-fill"></i></div>
+            <strong class="chat-username">{{ other.get_full_name|default:other.username }}</strong>
+          </div>
+          <span></span>
+        </div>
+
+        <!-- Thread -->
+        <div id="thread" class="thread">
+          {% for m in messages %}
+            {% if m.sender_id == request.user.id %}
+              <div class="msg-row msg-right">
+                <div class="bubble bubble-right">
+                  <span>{{ m.body }}</span>
+                  <span class="bubble-time">{{ m.created_at|time:"H:i" }}</span>
+                  <span class="bubble-tick {% if m.is_read %}read{% endif %}">
+                    {% if m.is_read %}<i class="bi bi-check2-all"></i>{% else %}<i class="bi bi-check2"></i>{% endif %}
+                  </span>
+                </div>
+              </div>
+            {% else %}
+              <div class="msg-row msg-left">
+                <div class="bubble bubble-left">
+                  <span>{{ m.body }}</span>
+                  <span class="bubble-time">{{ m.created_at|time:"H:i" }}</span>
+                </div>
+              </div>
+            {% endif %}
+          {% empty %}
+            <div class="text-center text-muted py-3">No messages yet.</div>
+          {% endfor %}
+        </div>
+
+        <!-- Composer -->
+        <form method="post" action="{% url 'messages:send' other.id %}" class="composer">
+          {% csrf_token %}
+          <div class="input-group">
+            <input name="body" class="form-control form-control-lg" placeholder="Type a message…" required>
+            <button class="btn btn-primary btn-lg btn-send" type="submit">
+              <i class="bi bi-send"></i>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const el = document.getElementById('thread');
+  if (el) el.scrollTop = el.scrollHeight;
+</script>
+{% endblock %}
+
+
+
+</html>

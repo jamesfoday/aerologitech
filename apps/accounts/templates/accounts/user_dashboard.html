@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/user_dashboard.css' %}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+{% endblock %}
+
+{% block content %}
+<div class="ud-container">
+
+  <section class="ud-hero">
+    <div class="ud-hero__avatar">
+      <i class="bi bi-person"></i>
+    </div>
+    <div class="ud-hero__meta">
+      <div class="ud-hero__welcome">Welcome</div>
+      <div class="ud-hero__name">
+        {{ user_obj.get_full_name|default:user_obj.username }}
+      </div>
+      <a class="ud-btn ud-btn--light ud-hero__edit" href="{% url 'accounts:profile_edit' %}">
+        Edit Profile <i class="bi bi-pencil ms-1"></i>
+      </a>
+    </div>
+  </section>
+
+  <div class="ud-grid">
+    <aside class="ud-actions">
+      <a class="ud-action" href="{% url 'services:catalog_airport' %}">
+        <span class="ud-action__icon"><i class="bi bi-plus-lg"></i></span>
+        <span class="ud-action__text">Book a service</span>
+      </a>
+
+      <a class="ud-action" href="{% url 'services:catalog_cars' %}">
+        <span class="ud-action__icon"><i class="bi bi-plus-lg"></i></span>
+        <span class="ud-action__text">Rent a car</span>
+      </a>
+
+      <a class="ud-action" href="{% url 'accounts:my_messages' %}">
+        <span class="ud-action__icon ud-action__icon--green"><i class="bi bi-chat-dots"></i></span>
+        <span class="ud-action__text">Message</span>
+      </a>
+
+      <a class="ud-action" href="{% url 'accounts:my_invoices' %}">
+        <span class="ud-action__icon"><i class="bi bi-receipt"></i></span>
+        <span class="ud-action__text">Invoice</span>
+      </a>
+
+      <a class="ud-action" href="{% url 'accounts:my_receipts' %}">
+        <span class="ud-action__icon"><i class="bi bi-file-earmark-check"></i></span>
+        <span class="ud-action__text">Receipt</span>
+      </a>
+
+      <a class="ud-action" href="{% url 'accounts:my_orders' %}">
+        <span class="ud-action__icon"><i class="bi bi-list-task"></i></span>
+        <span class="ud-action__text">Orders</span>
+      </a>
+    </aside>
+
+    <div class="ud-panels">
+      <section class="ud-panel">
+        <div class="ud-panel__head">
+          <h3>Airport service booked</h3>
+          <a class="ud-chip" href="{% url 'accounts:my_orders' %}?type=service">See All <i class="bi bi-chevron-right ms-1"></i></a>
+        </div>
+        <div class="ud-panel__body">
+          {% if service_orders %}
+            <ul class="ud-list">
+              {% for o in service_orders %}
+                <li class="ud-list__item">
+                  <div class="ud-list__title">{{ o.service.name }}</div>
+                  <div class="ud-list__meta">
+                    {% if o.start_date %}{{ o.start_date }}{% endif %}{% if o.end_date %} – {{ o.end_date }}{% endif %}
+                  </div>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <div class="ud-empty">No Trip</div>
+          {% endif %}
+        </div>
+      </section>
+
+      <section class="ud-panel">
+        <div class="ud-panel__head">
+          <h3>Car rental</h3>
+          <a class="ud-chip" href="{% url 'accounts:my_orders' %}?type=car">See All <i class="bi bi-chevron-right ms-1"></i></a>
+        </div>
+        <div class="ud-panel__body">
+          {% if car_orders %}
+            <ul class="ud-list">
+              {% for o in car_orders %}
+                <li class="ud-list__item">
+                  <div class="ud-list__title">{{ o.car.name }}</div>
+                  <div class="ud-list__meta">
+                    {% if o.start_date %}{{ o.start_date }}{% endif %}{% if o.end_date %} – {{ o.end_date }}{% endif %}
+                  </div>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <div class="ud-empty">No car rent</div>
+          {% endif %}
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+{% endblock %}

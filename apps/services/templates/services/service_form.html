@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<style>
+  :root{ --brand:#2f80ed; --tile:#edf4fa; --ink:#0f172a; --muted:#6b7280; }
+  .wrap{ max-width:980px; margin:24px auto; padding:0 12px; }
+  .card{ background:#fff; border-radius:16px; padding:24px; box-shadow:0 8px 22px rgba(26,39,68,.06); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; }
+  .back-link{ color:#64748b; text-decoration:none; display:inline-flex; align-items:center; gap:6px; font-weight:600; }
+  .title{ flex:1; text-align:center; color:var(--brand); font-weight:700; }
+  .tile{ background:var(--tile); border-radius:10px; padding:18px; }
+
+  /* helper */
+  .is-hidden{ display:none !important; }
+
+  /* --- Uploader --- */
+  .uploader{ padding:14px; border-radius:12px; background:linear-gradient(135deg,#0E98D6 0%, #FCCB56 100%); }
+
+  /* Empty state (create or after remove) */
+  .upload-empty{
+    width:100%; min-height:140px; border-radius:12px; border:2px dashed rgba(255,255,255,.65);
+    background:transparent; color:#fff; display:flex; align-items:center; justify-content:center; gap:14px;
+    cursor:pointer; user-select:none; transition:filter .15s ease, transform .1s ease;
+  }
+  .upload-empty:hover{ filter:brightness(.98); }
+  .upload-empty:active{ transform:scale(.998); }
+  .up-icon{ font-size:30px; line-height:1; display:flex; align-items:center; }
+  .up-title{ font-weight:800; }
+  .up-sub{ font-size:12px; opacity:.9; }
+
+  /* Drag-over effect */
+  .uploader.drag-over .upload-empty{
+    border-color:#fff; box-shadow:0 0 0 3px rgba(255,255,255,.25) inset;
+  }
+
+  /* Preview state */
+  .preview-wrap{
+    position:relative;
+    width:84px; height:84px; border-radius:999px;
+    background:#fff; border:3px solid #fff;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 6px 14px rgba(16,24,40,.16);
+    cursor:pointer; user-select:none;
+  }
+  .preview{ width:78px; height:78px; object-fit:cover; border-radius:999px; display:block; }
+  .remove-btn{
+    position:absolute; top:-6px; right:-6px;
+    width:24px; height:24px; border-radius:999px;
+    background:#fff; color:#0E98D6; border:2px solid #fff;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:900; line-height:1; cursor:pointer;
+    box-shadow:0 4px 10px rgba(16,24,40,.18);
+  }
+  .remove-btn:hover{ filter:brightness(.96); }
+
+  /* Hide Django's default clear/change text but keep inputs alive */
+  .django-file-wrap{ display:none; }
+
+  .row-foot{ display:flex; align-items:center; justify-content:space-between; gap:16px; margin-top:14px; }
+  .price-box{ display:inline-flex; align-items:center; gap:8px; }
+  .price-tile{ display:flex; align-items:center; gap:8px; padding:10px 12px; border-radius:8px; background:#cfe0f7; color:#0f3a7a; min-width:120px; }
+  .btn-primary{ background:var(--brand); color:#fff; border:none; border-radius:10px; padding:12px 24px; font-weight:700; }
+  @media (max-width:640px){ .card{ padding:18px; } .row-foot{ flex-direction:column; align-items:stretch; } .btn-primary{ width:100%; } }
+  .errorlist{ margin:6px 0 0; padding:0; list-style:none; color:#b91c1c; font-size:13px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container wrap">
+  <div class="card">
+    <div class="topbar">
+      <a href="javascript:history.back()" class="back-link"><i class="bi bi-chevron-left"></i> Back</a>
+      <div class="title">{% if mode == "edit" %}Edit Service{% else %}Create a Service{% endif %}</div>
+      <span></span>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" class="mt-3" novalidate>
+      {% csrf_token %}
+
+      <!-- Upload -->
+      <div class="tile mb-3">
+        <div class="uploader" id="uploader">
+          {# PREVIEW STATE (only if editing and image exists) #}
+          <div class="preview-wrap {% if mode != 'edit' or not svc.image %}is-hidden{% endif %}" id="previewWrap">
+            <img id="imgPreview" class="preview"
+                 src="{% if mode == 'edit' and svc.image %}{{ svc.image.url }}{% else %}{% static 'images/service-placeholder.jpg' %}{% endif %}"
+                 alt="Preview">
+            <button type="button" class="remove-btn" id="removeBtn" aria-label="Remove image">×</button>
+          </div>
+
+          {# EMPTY STATE (create OR edit with no image) #}
+          <button type="button" class="upload-empty {% if mode == 'edit' and svc.image %}is-hidden{% endif %}" id="uploadEmpty">
+            <div class="up-icon"><i class="bi bi-cloud-arrow-up"></i></div>
+            <div>
+              <div class="up-title">Upload image</div>
+              <div class="up-sub">Click or drag & drop</div>
+            </div>
+          </button>
+
+          <!-- Keep Django’s real widget hidden (file input + clear checkbox if present) -->
+          <div class="django-file-wrap" aria-hidden="true">
+            {{ form.image }}
+          </div>
+        </div>
+        {{ form.image.errors }}
+      </div>
+
+      <!-- Overview -->
+      <div class="tile mb-3">
+        {{ form.name }}
+        {{ form.name.errors }}
+      </div>
+
+      <!-- Description -->
+      <div class="tile mb-3">
+        {{ form.description }}
+        {{ form.description.errors }}
+      </div>
+
+      <div class="row-foot">
+        <div class="price-box">
+          <div class="text-muted" style="font-weight:700;">Price</div>
+          <div class="price-tile">
+            {{ form.price }}
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary">
+          {% if mode == "edit" %}Update{% else %}Create{% endif %}
+        </button>
+      </div>
+
+      <div style="display:none;">{{ form.available }}</div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block body_end %}
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+  const uploader     = document.getElementById("uploader");
+  const uploadEmpty  = document.getElementById("uploadEmpty");
+  const previewWrap  = document.getElementById("previewWrap");
+  const preview      = document.getElementById("imgPreview");
+  const removeBtn    = document.getElementById("removeBtn");
+
+  const realInput = document.querySelector('.django-file-wrap input[type="file"][name="image"]');
+  const realClear = document.querySelector('.django-file-wrap input[type="checkbox"][name$="-clear"], .django-file-wrap input[type="checkbox"][name="image-clear"]');
+
+  const PLACEHOLDER_URL = "{% static 'images/service-placeholder.jpg' %}";
+
+  const showEmpty   = () => { uploadEmpty?.classList.remove("is-hidden"); previewWrap?.classList.add("is-hidden"); };
+  const showPreview = () => { uploadEmpty?.classList.add("is-hidden"); previewWrap?.classList.remove("is-hidden"); };
+
+  // Click empty state to open file picker
+  uploadEmpty?.addEventListener("click", () => realInput?.click());
+
+  // Click preview (not the ×) to pick another file
+  previewWrap?.addEventListener("click", (e) => { if (e.target !== removeBtn) realInput?.click(); });
+
+  // Handle file selection -> preview
+  function handleFile(file){
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => { preview.src = e.target.result; showPreview(); if (realClear) realClear.checked = false; };
+    reader.readAsDataURL(file);
+  }
+
+  realInput?.addEventListener("change", function(){
+    const file = this.files && this.files[0];
+    if (file) handleFile(file);
+  });
+
+  // Drag & drop
+  if (uploader && realInput) {
+    ['dragenter','dragover'].forEach(evt => {
+      uploader.addEventListener(evt, (e) => { e.preventDefault(); e.stopPropagation(); uploader.classList.add('drag-over'); });
+    });
+    ['dragleave','drop'].forEach(evt => {
+      uploader.addEventListener(evt, (e) => { e.preventDefault(); e.stopPropagation(); uploader.classList.remove('drag-over'); });
+    });
+    uploader.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      const file = dt?.files?.[0];
+      if (file) {
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        realInput.files = dataTransfer.files;
+        handleFile(file);
+      }
+    });
+  }
+
+  // Clear via ×
+  removeBtn?.addEventListener("click", function(e){
+    e.stopPropagation();
+    if (realInput) realInput.value = "";
+    if (realClear) realClear.checked = true;  // tell Django to remove existing (if any)
+    preview.src = PLACEHOLDER_URL;
+    showEmpty();
+  });
+});
+</script>
+{% endblock %}
