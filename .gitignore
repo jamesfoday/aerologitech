@@ -118,3 +118,5 @@ celerybeat.pid
 
 # VS Code Python debugging artifacts
 .pyre_configuration.local
+.DS_Store
+static/.DS_Store
