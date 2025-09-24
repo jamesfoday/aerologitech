@@ -1,0 +1,120 @@
+# -------------------------
+# OS / Editor cruft
+# -------------------------
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.tmp
+*.temp
+.idea/
+.vscode/
+.vscode-test/
+.history/
+*.sublime-*
+*.code-workspace
+
+# -------------------------
+# Python
+# -------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual envs
+.venv/
+venv/
+ENV/
+env/
+pip-wheel-metadata/
+
+# Packaging / build
+.build/
+build/
+dist/
+downloads/
+eggs/
+.eggs/
+parts/
+sdist/
+wheels/
+share/python-wheels/
+*.egg-info/
+*.egg
+MANIFEST
+*.manifest
+*.spec
+
+# Testing / coverage
+.pytest_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+htmlcov/
+.hypothesis/
+
+# Type checkers
+.mypy_cache/
+.dmypy.json
+.pyre/
+.pytype/
+
+# Logs
+*.log
+
+# -------------------------
+# Django
+# -------------------------
+local_settings.py
+
+# Local dev DBs / dumps
+db.sqlite3
+db.sqlite3-journal
+*.sqlite3
+*.sqlite3-journal
+*.db
+*.bak
+*.sql
+*.tar
+*.gz
+*.zip
+
+# User uploads (never commit runtime uploads)
+videos/
+static/videos/
+media/
+
+# static/uploads/
+# (Uncomment if you want to exclude those.)
+
+# Whitenoise cache
+whitenoise/*
+
+# -------------------------
+# Env / secrets
+# -------------------------
+.env
+.env.*
+!.env.example
+!.env.sample
+.python-version
+
+# -------------------------
+# Tools / misc
+# -------------------------
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Gunicorn PIDs / sockets (if you create them)
+*.pid
+*.sock
+
+# VS Code Python debugging artifacts
+.pyre_configuration.local
