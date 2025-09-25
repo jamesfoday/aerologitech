@@ -1,52 +1,60 @@
-# config/settings.py
+from __future__ import annotations
 import os
-from pathlib import Path
 import dj_database_url
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+from .base import *  # noqa
 
-DEBUG = os.getenv("DEBUG", "False").lower() == "true"
-SECRET_KEY = os.getenv("SECRET_KEY", "dev-insecure-change-me")
+# -------------------- FLAGS -------------------- #
+# Let env control DEBUG (default false for safety)
+DEBUG = os.getenv("DEBUG", "false").lower() == "true"
 
-
+# -------------------- HOSTS / CSRF -------------------- #
 ALLOWED_HOSTS = [h.strip() for h in os.getenv("ALLOWED_HOSTS", "").split(",") if h.strip()]
-if DEBUG and not ALLOWED_HOSTS:
+if not ALLOWED_HOSTS:
+    # For first deploys you can leave this open; set your real domains ASAP.
     ALLOWED_HOSTS = ["*"]
 
-# Helps cookie/CSRF behind proxies
+# CSRF needs explicit origins (https only)
 CSRF_TRUSTED_ORIGINS = [
-    f"https://{h}" for h in ALLOWED_HOSTS
-    if h and not h.startswith(".") and "." in h
+    f"https://{h}" for h in ALLOWED_HOSTS if "." in h and not h.startswith(".")
 ]
-# If you only set a wildcard like ".onrender.com", add a concrete host too:
-# CSRF_TRUSTED_ORIGINS.append("https://your-service.onrender.com")
 
+# -------------------- DATABASE -------------------- #
 DATABASES = {
     "default": dj_database_url.config(
-        default=os.getenv("DATABASE_URL", f"sqlite:///{BASE_DIR/'db.sqlite3'}"),
+        default=os.getenv("DATABASE_URL", f"sqlite:///{BASE_DIR}/db.sqlite3"),
         conn_max_age=600,
         conn_health_checks=True,
     )
 }
 
-# Static files via WhiteNoise
-STATIC_URL = "/static/"
-STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_DIRS = [BASE_DIR / "static"] if (BASE_DIR / "static").exists() else []
+# -------------------- STATIC via WhiteNoise -------------------- #
+MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")
 
-MIDDLEWARE = [
-    "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",   # <— must be right after SecurityMiddleware
-    # ... the rest of your middleware
-]
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
+}
 
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-WHITENOISE_MAX_AGE = 31536000
-
-# Proxy/HTTPS
+# -------------------- SECURITY (PROD) -------------------- #
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-SESSION_COOKIE_SECURE = not DEBUG
-CSRF_COOKIE_SECURE = not DEBUG
-SECURE_HSTS_SECONDS = 31536000 if not DEBUG else 0
-SECURE_HSTS_INCLUDE_SUBDOMAINS = not DEBUG
-SECURE_HSTS_PRELOAD = not DEBUG
+SECURE_SSL_REDIRECT = os.getenv("SECURE_SSL_REDIRECT", "true").lower() == "true"
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SECURE_HSTS_SECONDS = int(os.getenv("SECURE_HSTS_SECONDS", "0"))  # raise (e.g. 31536000) after HTTPS is confirmed
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+
+# -------------------- EMAIL (from env) -------------------- #
+# EMAIL_BACKEND from base unless overridden
+EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", EMAIL_BACKEND)
+EMAIL_HOST = os.getenv("EMAIL_HOST", "")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587")) if EMAIL_HOST else 587
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "true").lower() == "true"
+
+# -------------------- OPTIONAL CLOUDINARY -------------------- #
+if os.getenv("CLOUDINARY_URL"):
+    INSTALLED_APPS += ["cloudinary", "cloudinary_storage"]
+    DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
