@@ -39,3 +39,5 @@ webencodings==0.5.1
 wheel==0.45.1
 whitenoise==6.11.0
 zopfli==0.2.3.post1
+Django>=5.2,<6
+psycopg[binary]
