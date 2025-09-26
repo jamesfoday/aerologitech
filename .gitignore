@@ -87,7 +87,7 @@ db.sqlite3-journal
 
 # User uploads (never commit runtime uploads)
 videos/
-static/videos/
+!static/videos/hero.mp4
 media/
 
 # static/uploads/
