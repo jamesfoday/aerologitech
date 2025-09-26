@@ -1,0 +1,124 @@
+/* Booking modal overlay + dialog */
+.bm-overlay{
+  position:fixed; inset:0; background:rgba(2, 6, 23, .6);
+  display:grid; place-items:center; z-index:1050;
+}
+.bm-modal{
+  width:min(680px, 92vw);
+  background:#fff; border-radius:16px;
+  box-shadow:0 20px 60px rgba(2, 6, 23, .4);
+  overflow:hidden; position:relative;
+}
+.bm-close{
+  position:absolute; right:14px; top:10px;
+  background:transparent; border:0; font-size:28px; line-height:1;
+  color:#1f2937; cursor:pointer;
+}
+
+/* Header */
+.bm-header{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:16px 18px; border-bottom:1px solid #e5e7eb;
+}
+.bm-service-name{ font-weight:800; color:#0f172a; }
+.bm-service-price{ color:#1559b3; font-weight:800; }
+.bm-continue{
+  background:#2f80ed; color:#fff; border:0; border-radius:8px; padding:8px 14px;
+  font-weight:700; cursor:pointer;
+}
+.bm-continue[disabled]{ opacity:.55; pointer-events:none; }
+
+/* Body layout & spacing */
+.bm-body{
+  padding:16px 18px;
+  display:grid;
+  gap:16px;                    /* breathing room between rows */
+}
+
+.bm-field{
+  position:relative;
+  margin-bottom:6px;           /* extra spacing between fields */
+}
+
+.bm-input{
+  width:100%;
+  min-height:46px;             /* taller inputs (like services modal) */
+  background:#f3f6fb;
+  border:1px solid #e6eef8;
+  border-radius:12px;
+  padding:12px 92px 12px 14px; /* room for calendar & clear buttons */
+  outline:none;
+}
+
+/* Datetime right-side in-input controls */
+.bm-field--datetime .bm-ctrl{
+  position:absolute; top:50%; transform:translateY(-50%);
+  height:30px; padding:0 10px;
+  border-radius:8px; border:1px solid #e6eef8;
+  background:#fff; color:#334155;
+  display:inline-flex; align-items:center; gap:6px;
+  cursor:pointer;
+}
+.bm-field--datetime #bm-open-picker{ right:48px; }
+.bm-field--datetime #bm-clear-datetime{ right:8px; }
+.bm-field--datetime .bm-ctrl:hover{
+  background:#eef2ff; border-color:#d6def6;
+}
+
+.bm-ico{ position:absolute; right:12px; top:50%; transform:translateY(-50%); color:#64748b; }
+
+/* Terms */
+.bm-terms-wrap{ margin-top:8px; }
+.bm-terms-title{ font-weight:700; color:#334155; margin-bottom:6px; }
+.bm-terms-box{
+  background:#f8fbff; border:1px dashed #cfe2ff; padding:12px; border-radius:12px; color:#475569;
+}
+
+/* Step 2: review */
+.bm-review{ display:grid; gap:14px; }
+.bm-review-row{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:10px; padding-top:6px;
+}
+.bm-dot{
+  width:10px; height:10px; border-radius:999px;
+  background:#1e90ff; margin-right:10px;
+}
+.bm-review-col{
+  display:flex; align-items:center; gap:10px; flex:1;
+}
+.bm-review-label{ color:#64748b; font-weight:700; margin-right:6px; }
+.bm-review-value{ color:#0f172a; font-weight:800; letter-spacing:.1px; }
+
+.bm-edit{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:34px; height:34px; border-radius:999px;
+  background:#eaf2ff; border:1px solid #d6e6ff; color:#1559b3;
+  cursor:pointer;
+}
+.bm-edit:hover{ background:#dfeaff; }
+
+.bm-review-block{
+  background:#f3f7ff; border:1px solid #d9e6ff; border-radius:12px;
+  padding:14px 16px; color:#0f172a; line-height:1.45; font-weight:600;
+}
+.bm-review-line + .bm-review-line{ margin-top:6px; }
+
+/* Titles on step 2 */
+.bm-pay-title{ font-weight:800; color:#0f172a; margin-top:8px; margin-bottom:4px; }
+
+/* Payment buttons */
+.bm-pay{
+  width:100%; border-radius:12px; padding:12px 14px;
+  border:1px solid transparent; font-weight:800; color:#0f172a;
+}
+.btn-cash{ background:#1e90ff; color:#fff; border-color:#1e90ff; }
+.btn-cash:hover{ filter:brightness(0.95); }
+.btn-paypal{
+  background: linear-gradient(90deg, #16a0b6 0%, #86cf9a 50%, #f0c058 100%);
+  color:#1f2937; border:1px solid #d9e6ff;
+}
+.btn-paypal:hover{ filter:brightness(0.98); }
+
+/* Validation highlight */
+.is-invalid{ border-color:#ef4444 !important; box-shadow:0 0 0 3px rgba(239, 68, 68, .15); }

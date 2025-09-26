@@ -5,7 +5,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # ------------------------------------------------------------------ Core
-SECRET_KEY = os.getenv("SECRET_KEY", "dev-insecure-change-me")
+SECRET_KEY = os.getenv("SECRET_KEY", "hsjshs12sjskjsakjsios")
 DEBUG = False
 ALLOWED_HOSTS: list[str] = []
 CSRF_TRUSTED_ORIGINS: list[str] = []

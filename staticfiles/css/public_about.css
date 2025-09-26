@@ -1,0 +1,93 @@
+:root{
+  --bg:#E8EFF5;
+  --card:#ffffff;
+  --ink:#0f172a;
+  --muted:#5f6c7b;
+  --brand:#2f80ed;
+  --shadow:0 8px 22px rgba(26,39,68,.06);
+  --radius:16px;
+}
+
+body { background: var(--bg); color: var(--ink); }
+
+/* Layout */
+.about-container{
+  max-width: 980px;
+  margin: 24px auto 40px;
+  padding: 0 16px;
+}
+
+/* Hero */
+.about-hero{
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  margin-bottom: 18px;
+}
+.about-hero__img{
+  width: 100%;
+  height: 240px;
+  object-fit: cover;
+  filter: saturate(.98);
+  display: block;
+}
+.about-hero__label{
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  background: rgba(0,0,0,.55);
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-weight: 700;
+  letter-spacing: .2px;
+}
+
+/* Cards */
+.about-card{
+  background: var(--card);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 18px 18px 14px;
+  margin: 14px 0;
+}
+.about-card__title{
+  margin: 0 0 8px;
+  font-size: 22px;
+  font-weight: 800;
+}
+.about-card p{
+  margin: 8px 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+/* Map block */
+.about-map{
+  background: var(--card);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 12px;
+  margin: 16px 0 6px;
+  text-align: center;
+}
+.about-map__img{
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  display: block;
+}
+.about-map__caption{
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 8px;
+}
+
+/* Responsive */
+@media (min-width: 1100px){
+  .about-hero__img{ height: 280px; }
+}
+@media (max-width: 480px){
+  .about-hero__img{ height: 200px; }
+}

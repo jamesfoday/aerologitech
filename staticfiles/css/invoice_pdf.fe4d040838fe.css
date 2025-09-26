@@ -1,0 +1,26 @@
+/* A4-friendly layout */
+@page { size: A4; margin: 18mm; }
+body.pdf { background: #fff !important; }
+
+/* Centered content similar to your detail card */
+.page-wrap { max-width: 980px; margin: 0 auto; }
+
+/* Make the logo bigger in PDF */
+.logo, img.logo { height: 80px !important; }
+
+/* Tables & header polish to match UI */
+.table thead th {
+  background: #e8f0fb !important;
+  color: #0f172a !important;
+  font-weight: 600 !important;
+}
+
+/* Totals aligned to the right column */
+.totals-box { max-width: 420px; margin-left: auto; }
+.totals-box .text-end, .totals-box td { text-align: right !important; }
+
+/* Remove any interactive-only bits if they sneak in */
+.round-action, .action-row, a.back-link { display: none !important; }
+
+/* Ensure backgrounds print */
+* { -webkit-print-color-adjust: exact; print-color-adjust: exact; }

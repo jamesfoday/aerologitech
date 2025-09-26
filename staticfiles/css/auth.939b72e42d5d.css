@@ -1,0 +1,176 @@
+:root{
+  --bg:#eaf2f9;
+  --card:#ffffff;
+  --ink:#0f172a;
+  --muted:#6b7280;
+  --brand:#1871c4;      /* unified with your blue */
+  --shadow:0 10px 24px rgba(15,23,42,.06);
+  --radius:16px;
+}
+
+/* --- Layout ------------------------------------------------------- */
+.auth-page{
+  min-height:calc(100dvh - 120px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:var(--bg);
+  padding:32px 12px;
+}
+
+.auth-card{
+  width:100%;
+  max-width:520px;
+  background:var(--card);
+  border-radius:12px;
+  box-shadow:var(--shadow);
+  padding:28px 26px;
+}
+
+/* --- Headings / Alerts ------------------------------------------- */
+.auth-title{
+  margin:0 0 18px;
+  font-size:18px;
+  font-weight:800;
+  color:var(--brand);
+  text-align:center;
+}
+
+.auth-alert{
+  background:#fff2f2;
+  color:#b42318;
+  border:1px solid #f9d3d3;
+  border-radius:10px;
+  padding:10px 12px;
+  margin-bottom:12px;
+  font-size:14px;
+}
+
+/* --- Form --------------------------------------------------------- */
+.auth-form{ display:flex; flex-direction:column; gap:12px; }
+
+.auth-field{ position:relative; }
+.auth-field--password{ margin-top:2px; }
+
+.auth-input{
+  width:100%;
+  height:44px;
+  border:0;
+  border-radius:10px;
+  background:#e9ecef;
+  color:var(--ink);
+  padding:0 14px;
+  outline:none;
+}
+.auth-input::placeholder{ color:#9aa3af; }
+
+/* Password eye button */
+.auth-eye{
+  position:absolute;
+  right:8px;
+  top:50%;
+  transform:translateY(-50%);
+  width:34px;
+  height:34px;
+  border:0;
+  border-radius:8px;
+  background:#dfe7f3;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+}
+.auth-eye i{ font-size:16px; color:var(--brand); }
+
+/* Submit */
+.auth-btn{
+  height:42px;
+  border:0;
+  border-radius:10px;
+  background:var(--brand);
+  color:#fff;
+  font-weight:700;
+  cursor:pointer;
+}
+.auth-btn:disabled{
+  opacity:.6;
+  cursor:not-allowed;
+}
+
+/* Links */
+.auth-links{
+  margin-top:6px;
+  text-align:center;
+  font-size:13px;
+}
+.auth-links a{
+  color:var(--brand);
+  text-decoration:none;
+}
+.auth-sep{ margin:0 6px; color:#9aa3af; }
+
+/* Sign-up prompt (if used outside tabs) */
+.auth-signup{ margin-top:14px; text-align:center; }
+.auth-signup-text{
+  color:var(--brand);
+  font-weight:700;
+  font-size:13px;
+  margin-bottom:8px;
+}
+.auth-signup-btn{
+  display:inline-block;
+  background:var(--brand);
+  color:#fff;
+  padding:8px 16px;
+  border-radius:8px;
+  text-decoration:none;
+  font-weight:700;
+  font-size:14px;
+}
+
+/* --- Tabs --------------------------------------------------------- */
+.auth-tabs{
+  display:flex;
+  gap:8px;
+  background:var(--bg);
+  border-radius:10px;
+  padding:4px;
+  margin-bottom:14px;
+}
+.auth-tab{
+  flex:1;
+  height:38px;
+  border:0;
+  border-radius:8px;
+  background:transparent;
+  font-weight:700;
+  color:var(--brand);
+  cursor:pointer;
+}
+.auth-tab.is-active{
+  background:var(--brand);
+  color:#fff;
+}
+
+/* Panels + hard hide helper */
+.auth-panel{ display:block; }
+.auth-panel.is-hidden{ display:none; }
+.is-hidden{ display:none !important; }  /* safety net */
+
+/* --- Focus states ------------------------------------------------- */
+.auth-tab:focus-visible,
+.auth-btn:focus-visible,
+.auth-input:focus-visible,
+.auth-eye:focus-visible,
+.auth-links a:focus-visible{
+  outline:2px solid var(--brand);
+  outline-offset:2px;
+  border-radius:10px;
+}
+
+/* --- Small screens ------------------------------------------------ */
+@media (max-width: 420px){
+  .auth-card{ padding:22px 18px; }
+  .auth-tabs{ gap:6px; padding:3px; }
+  .auth-tab{ height:36px; font-size:14px; }
+}

@@ -1,0 +1,138 @@
+:root{
+  --bg:#eaf2f9;
+  --card:#fff;
+  --ink:#0f172a;
+  --muted:#6b7280;
+  --brand:#2f80ed;
+  --ok:#22c55e;
+  --shadow:0 10px 24px rgba(15, 23, 42, .06);
+  --radius:16px;
+}
+
+body{ background:var(--bg); color:var(--ink); }
+
+.ud-container{ max-width:1400px; margin:24px auto; padding:0 16px; }
+
+/* --- HERO ------------------------------------------------------ */
+.ud-hero{
+  display:grid;
+  grid-template-columns:72px auto 1fr; /* avatar | edit button | centered meta */
+  gap:16px;
+  align-items:center;
+  background: linear-gradient(90deg, #2f80ed, #6ee7b7, #f6d365);
+  padding:18px;
+  border-radius:14px;
+  box-shadow:var(--shadow);
+  color:#fff;
+}
+.ud-hero__avatar{
+  width:72px; height:72px; border-radius:50%;
+  background:rgba(255,255,255,.25);
+  display:flex; align-items:center; justify-content:center; font-size:32px;
+  grid-column:1; grid-row:1;
+}
+.ud-hero__edit{
+  grid-column:2; grid-row:1;
+  align-self:start;
+  white-space:nowrap;
+  margin-top:0; /* sits level with avatar */
+}
+.ud-hero__meta{
+  grid-column:3; grid-row:1;
+  display:flex; flex-direction:column; align-items:center; text-align:center;
+}
+.ud-hero__name{ font-weight:800; font-size:20px; }
+.ud-hero__welcome{ font-weight:700; letter-spacing:.2px; margin-bottom:2px; }
+
+/* --- GRID LAYOUT ---------------------------------------------- */
+.ud-grid{ display:grid; grid-template-columns:260px 1fr; gap:18px; margin-top:16px; margin-bottom: 80px; }
+
+/* --- ACTIONS --------------------------------------------------- */
+.ud-actions{
+  background:var(--card); border-radius:12px; box-shadow:var(--shadow);
+  padding:14px; display:grid; grid-template-columns:1fr 1fr; gap:14px;
+  width:350px !important;
+}
+
+.ud-action{
+  display:flex; flex-direction:column; align-items:center; justify-content:center !important;
+  gap:8px; padding:10px; border-radius:12px;
+  /* background:#f8fafc; */ /* intentionally neutral per your tweak */
+  text-decoration:none; color:var(--ink); text-align:center;
+}
+.ud-action:hover{ background:#eef2f7; }
+
+.ud-action__icon{
+  width:64px; height:64px; border-radius:50%;
+  background:#e6efff; display:flex; align-items:center; justify-content:center;
+  font-size:28px;
+}
+.ud-action__icon--green{ background:#e8fbe9; color:#166534; }
+
+.ud-action__text{
+  display:block; font-weight:600; font-size:14px; line-height:1.2; text-align:center;
+}
+
+/* --- PANELS ---------------------------------------------------- */
+.ud-panels{ display:grid; gap:16px; margin-left:80px !important; height:500px !important; }
+
+.ud-panel{
+  background:var(--card); border-radius:12px; box-shadow:var(--shadow);
+  padding:0;
+}
+.ud-panel__head{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:12px 14px; border-bottom:1px solid #edf2f7;
+}
+.ud-panel__head h3{ margin:0; font-size:16px; font-weight:800; }
+.ud-chip{
+  background:#f5f7fb; padding:6px 10px; border-radius:10px; text-decoration:none; color:var(--ink);
+  display:inline-flex; align-items:center; gap:4px; border:1px solid #e6ebf2;
+}
+.ud-panel__body{ padding:14px; }
+.ud-empty{ text-align:center; color:#2563eb; font-weight:700; padding:24px 0; }
+
+.ud-list{ list-style:none; margin:0; padding:0; }
+.ud-list__item{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:10px 6px; border-bottom:1px dashed #edf2f7;
+}
+.ud-list__item:last-child{ border-bottom:0; }
+.ud-list__title{ font-weight:700; }
+.ud-list__meta{ color:var(--muted); font-size:13px; }
+
+/* --- BUTTONS --------------------------------------------------- */
+.ud-btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:6px;
+  border-radius:10px; padding:8px 12px; text-decoration:none; border:none; cursor:pointer;
+  margin-top: 20px;
+}
+.ud-btn--light{ background:#f5f7fb; color:#0f172a; }
+.ud-btn--primary{ background:var(--brand); color:#fff; }
+
+/* --- PROFILE FORM ---------------------------------------------- */
+.ud-form-wrap{ max-width:720px; }
+.ud-form{
+  background:var(--card); border-radius:12px; box-shadow:var(--shadow);
+  padding:18px;
+}
+.ud-form__title{ margin:0 0 10px; font-weight:800; }
+.ud-field{ display:flex; flex-direction:column; margin:10px 0; }
+.ud-label{ font-size:13px; color:var(--muted); margin-bottom:4px; }
+.ud-form input{ height:42px; padding:8px 10px; border:1px solid #e5e7eb; border-radius:10px; }
+.ud-form__actions{ display:flex; gap:8px; margin-top:12px; }
+
+/* --- RESPONSIVE ------------------------------------------------ */
+@media (max-width: 900px){
+  .ud-grid{ grid-template-columns:1fr; }
+}
+
+@media (max-width: 560px){
+  .ud-hero{
+    grid-template-columns:56px 1fr; /* avatar | edit */
+    row-gap:10px;
+  }
+  .ud-hero__avatar{ grid-column:1; grid-row:1; }
+  .ud-hero__edit{ grid-column:2; grid-row:1; justify-self:start; }
+  .ud-hero__meta{ grid-column:1 / -1; grid-row:2; }
+}
