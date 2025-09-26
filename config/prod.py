@@ -6,12 +6,14 @@ import dj_database_url
 
 from .base import *  # noqa
 
+
 # --------------------------------------------------------------------
 # FLAGS / SECRETS
 # --------------------------------------------------------------------
 DEBUG = os.getenv("DEBUG", "false").lower() == "true"
-# If your base file defines SECRET_KEY already, the env value will override it:
+# If base defines SECRET_KEY, allow env to override it
 SECRET_KEY = os.getenv("SECRET_KEY", SECRET_KEY)  # type: ignore[name-defined]
+
 
 # --------------------------------------------------------------------
 # HOSTS / CSRF
@@ -19,88 +21,107 @@ SECRET_KEY = os.getenv("SECRET_KEY", SECRET_KEY)  # type: ignore[name-defined]
 # ALLOWED_HOSTS: comma or space separated
 _raw_hosts = os.getenv("ALLOWED_HOSTS", "")
 ALLOWED_HOSTS = [h.strip() for chunk in _raw_hosts.split(",") for h in chunk.split() if h.strip()]
-
-# If you prefer an easier first deploy, leave this open when nothing provided.
-# (Tighten to explicit domains as soon as you're live.)
 if not ALLOWED_HOSTS:
+    # Looser first deploy—tighten when you bind your domain
     ALLOWED_HOSTS = ["*"]
 
-# CSRF_TRUSTED_ORIGINS: allow comma or space separated values; if not provided,
-# derive from ALLOWED_HOSTS and add the Render wildcard as a convenience.
+# CSRF_TRUSTED_ORIGINS: comma/space separated; if missing, infer from hosts + Render wildcard
 _raw_csrf = os.getenv("CSRF_TRUSTED_ORIGINS", "")
 if _raw_csrf.strip():
-    CSRF_TRUSTED_ORIGINS = [
-        o.strip()
-        for chunk in _raw_csrf.split(",")
-        for o in chunk.split()
-        if o.strip()
-    ]
+    CSRF_TRUSTED_ORIGINS = [o.strip() for chunk in _raw_csrf.split(",") for o in chunk.split() if o.strip()]
 else:
-    CSRF_TRUSTED_ORIGINS = [
-        f"https://{h}"
-        for h in ALLOWED_HOSTS
-        if "." in h and not h.startswith(".")
-    ]
-    # Helpful default for Render
+    CSRF_TRUSTED_ORIGINS = [f"https://{h}" for h in ALLOWED_HOSTS if "." in h and not h.startswith(".")]
     if "https://*.onrender.com" not in CSRF_TRUSTED_ORIGINS:
         CSRF_TRUSTED_ORIGINS.append("https://*.onrender.com")
+
 
 # --------------------------------------------------------------------
 # DATABASE (Render Postgres needs SSL)
 # --------------------------------------------------------------------
 DATABASES = {
     "default": dj_database_url.config(
-        default=os.getenv("DATABASE_URL", f"sqlite:///{BASE_DIR}/db.sqlite3"),
+        default=os.getenv("DATABASE_URL", f"sqlite:///{BASE_DIR}/db.sqlite3"),  # type: ignore[name-defined]
         conn_max_age=600,
         conn_health_checks=True,
-        ssl_require=True,  
+        ssl_require=True,
     )
 }
 
+
 # --------------------------------------------------------------------
-# STATIC via WhiteNoise
+# STATIC via WhiteNoise  |  MEDIA via Cloudinary (if enabled)
 # --------------------------------------------------------------------
-# Ensure WhiteNoise is present right after SecurityMiddleware
+# Ensure WhiteNoise middleware is present right after SecurityMiddleware
 if "whitenoise.middleware.WhiteNoiseMiddleware" not in MIDDLEWARE:
+    # Typically SecurityMiddleware is at index 0
     MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")
 
-STORAGES = {
-    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
-    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
-}
+USE_CLOUDINARY = bool(os.getenv("CLOUDINARY_URL"))
+
+# Make sure cloudinary apps exist and are ordered (cloudinary_storage BEFORE staticfiles)
+if USE_CLOUDINARY:
+    for app in ("cloudinary_storage", "cloudinary"):
+        if app in INSTALLED_APPS:
+            INSTALLED_APPS.remove(app)
+
+    if "django.contrib.staticfiles" in INSTALLED_APPS:
+        idx = INSTALLED_APPS.index("django.contrib.staticfiles")
+        INSTALLED_APPS.insert(idx, "cloudinary_storage")
+        INSTALLED_APPS.insert(idx + 1, "cloudinary")
+    else:
+        INSTALLED_APPS += ["cloudinary_storage", "cloudinary"]
+
+# Use STORAGES (Django 4.2+) so defaults are unambiguous
+if USE_CLOUDINARY:
+    STORAGES = {
+        "default": {"BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage"},
+        "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
+    }
+    CLOUDINARY_STORAGE = {
+        "SECURE": True,  # force https URLs
+        # optional: configure folder/prefix, transforms, etc.
+        # "STATICFILES_MANIFEST_ROOT": os.path.join(BASE_DIR, "staticfiles"),
+    }
+else:
+    STORAGES = {
+        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+        "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
+    }
+
+# Manifest strictness: True = error at runtime for missing hashed assets.
+# You can override with env: WHITENOISE_MANIFEST_STRICT=false to avoid 500s while iterating.
+WHITENOISE_MANIFEST_STRICT = os.getenv("WHITENOISE_MANIFEST_STRICT", "true").lower() == "true"
+
+MEDIA_URL = "/media/"  # harmless with Cloudinary; useful if falling back locally
+
 
 # --------------------------------------------------------------------
-# SECURITY (behind Render's proxy)
+# SECURITY (behind Render’s proxy)
 # --------------------------------------------------------------------
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_SSL_REDIRECT = os.getenv("SECURE_SSL_REDIRECT", "true").lower() == "true"
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
-# Set HSTS after you confirm HTTPS is working end-to-end
+# Enable HSTS once HTTPS confirmed end-to-end (set seconds via env)
 SECURE_HSTS_SECONDS = int(os.getenv("SECURE_HSTS_SECONDS", "0"))
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 
+
 # --------------------------------------------------------------------
 # EMAIL (optional, from env)
 # --------------------------------------------------------------------
-EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", EMAIL_BACKEND)
+EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", EMAIL_BACKEND)  # type: ignore[name-defined]
 EMAIL_HOST = os.getenv("EMAIL_HOST", "")
 EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587")) if EMAIL_HOST else 587
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
 EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "true").lower() == "true"
 
-# --------------------------------------------------------------------
-# OPTIONAL: Cloudinary media
-# --------------------------------------------------------------------
-if os.getenv("CLOUDINARY_URL"):
-    INSTALLED_APPS += ["cloudinary", "cloudinary_storage"]
-    DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 
 # --------------------------------------------------------------------
-# LOGGING (send errors to console so they appear in Render logs)
+# LOGGING (errors to console for Render logs)
 # --------------------------------------------------------------------
 LOGGING = {
     "version": 1,
@@ -111,6 +132,3 @@ LOGGING = {
         "django.request": {"handlers": ["console"], "level": "ERROR", "propagate": False},
     },
 }
-
-
-WHITENOISE_MANIFEST_STRICT = False

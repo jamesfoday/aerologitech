@@ -41,3 +41,5 @@ whitenoise==6.11.0
 zopfli==0.2.3.post1
 Django>=5.2,<6
 psycopg[binary]
+cloudinary==1.44.1
+django-cloudinary-storage==0.3.0
