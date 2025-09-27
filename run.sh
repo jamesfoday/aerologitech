@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
-set -e
+set -Eeuo pipefail
 
-# Optional: show where we are
-echo "Starting Django with settings: ${DJANGO_SETTINGS_MODULE:-config.settings}"
+# Use prod settings by default
+export DJANGO_SETTINGS_MODULE="${DJANGO_SETTINGS_MODULE:-config.prod}"
 
-# Collect static files for Whitenoise / CDN
-python manage.py collectstatic --noinput
-
-# Apply database migrations
+echo "▶ Running migrations…"
 python manage.py migrate --noinput
 
-# Start Gunicorn (the $PORT env var is provided by the host, e.g. Railway/Render/Fly)
+echo "▶ Collecting static…"
+python manage.py collectstatic --noinput
+
+echo "▶ Starting gunicorn…"
 exec gunicorn config.wsgi:application \
-  --bind 0.0.0.0:"${PORT:-8000}" \
-  --workers 3 \
-  --timeout 60
+  --bind "0.0.0.0:${PORT:-10000}" \
+  --workers "${WEB_CONCURRENCY:-2}" \
+  --timeout "${GUNICORN_TIMEOUT:-60}"
