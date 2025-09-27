@@ -6,7 +6,7 @@ ENV PYTHONUNBUFFERED=1 \
 
 WORKDIR /app
 
-# System deps (psycopg needs libpq), curl for healthcheck
+# System deps
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 curl ca-certificates \
   && rm -rf /var/lib/apt/lists/*
@@ -18,6 +18,10 @@ RUN pip install -r requirements.txt
 # App code
 COPY . /app
 
+# Pre-collect static at build time (Cloudinary disabled for this command)
+ENV DJANGO_SETTINGS_MODULE=config.prod
+RUN USE_CLOUDINARY_MEDIA=false python manage.py collectstatic --noinput
+
 # Make start script executable
 RUN chmod +x /app/run.sh
 
@@ -28,5 +32,5 @@ EXPOSE 10000
 HEALTHCHECK --interval=30s --timeout=3s --retries=3 \
   CMD curl -fsS "http://localhost:${PORT:-10000}/" || exit 1
 
-# Start the app (use shell so ${PORT} expands)
+# Start the app (shell form so ${PORT} expands)
 CMD ["/bin/bash", "-lc", "/app/run.sh"]
