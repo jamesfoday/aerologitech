@@ -1,16 +1,18 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
+set -x  # debug: echo commands so we see them in Render logs
 
-# Use prod settings by default
+# Default to prod settings
 export DJANGO_SETTINGS_MODULE="${DJANGO_SETTINGS_MODULE:-config.prod}"
 
-echo "▶ Running migrations…"
+python --version
+echo "▶ Running migrations..."
 python manage.py migrate --noinput
 
-echo "▶ Collecting static…"
+echo "▶ Collecting static..."
 python manage.py collectstatic --noinput
 
-echo "▶ Starting gunicorn…"
+echo "▶ Starting gunicorn..."
 exec gunicorn config.wsgi:application \
   --bind "0.0.0.0:${PORT:-10000}" \
   --workers "${WEB_CONCURRENCY:-2}" \
