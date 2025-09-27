@@ -11,7 +11,7 @@ from .base import *  # noqa
 # FLAGS / SECRETS
 # --------------------------------------------------------------------
 DEBUG = os.getenv("DEBUG", "false").lower() == "true"
-# If base defines SECRET_KEY, allow env to override it
+# Allow SECRET_KEY from env to override base
 SECRET_KEY = os.getenv("SECRET_KEY", SECRET_KEY)  # type: ignore[name-defined]
 
 
@@ -22,10 +22,10 @@ SECRET_KEY = os.getenv("SECRET_KEY", SECRET_KEY)  # type: ignore[name-defined]
 _raw_hosts = os.getenv("ALLOWED_HOSTS", "")
 ALLOWED_HOSTS = [h.strip() for chunk in _raw_hosts.split(",") for h in chunk.split() if h.strip()]
 if not ALLOWED_HOSTS:
-    # Looser first deploy—tighten when you bind your domain
+    # First deploy convenience; restrict once your domain is set
     ALLOWED_HOSTS = ["*"]
 
-# CSRF_TRUSTED_ORIGINS: comma/space separated; if missing, infer from hosts + Render wildcard
+# CSRF_TRUSTED_ORIGINS: comma or space separated; if absent, infer from hosts + Render wildcard
 _raw_csrf = os.getenv("CSRF_TRUSTED_ORIGINS", "")
 if _raw_csrf.strip():
     CSRF_TRUSTED_ORIGINS = [o.strip() for chunk in _raw_csrf.split(",") for o in chunk.split() if o.strip()]
@@ -36,14 +36,14 @@ else:
 
 
 # --------------------------------------------------------------------
-# DATABASE (Render Postgres needs SSL)
+# DATABASE (Render Postgres w/ SSL)
 # --------------------------------------------------------------------
 DATABASES = {
     "default": dj_database_url.config(
         default=os.getenv("DATABASE_URL", f"sqlite:///{BASE_DIR}/db.sqlite3"),  # type: ignore[name-defined]
         conn_max_age=600,
         conn_health_checks=True,
-        ssl_require=True,
+        ssl_require=True,  # forces ?sslmode=require for Postgres
     )
 }
 
@@ -53,13 +53,14 @@ DATABASES = {
 # --------------------------------------------------------------------
 # Ensure WhiteNoise middleware is present right after SecurityMiddleware
 if "whitenoise.middleware.WhiteNoiseMiddleware" not in MIDDLEWARE:
-    # Typically SecurityMiddleware is at index 0
+    # SecurityMiddleware is typically index 0
     MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")
 
 USE_CLOUDINARY = bool(os.getenv("CLOUDINARY_URL"))
 
-# Make sure cloudinary apps exist and are ordered (cloudinary_storage BEFORE staticfiles)
+# Ensure cloudinary apps are present and ordered (cloudinary_storage BEFORE staticfiles)
 if USE_CLOUDINARY:
+    # Avoid duplicates if defined in base
     for app in ("cloudinary_storage", "cloudinary"):
         if app in INSTALLED_APPS:
             INSTALLED_APPS.remove(app)
@@ -71,7 +72,7 @@ if USE_CLOUDINARY:
     else:
         INSTALLED_APPS += ["cloudinary_storage", "cloudinary"]
 
-# Use STORAGES (Django 4.2+) so defaults are unambiguous
+# Use STORAGES (Django 4.2+) so defaults are explicit
 if USE_CLOUDINARY:
     STORAGES = {
         "default": {"BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage"},
@@ -79,8 +80,8 @@ if USE_CLOUDINARY:
     }
     CLOUDINARY_STORAGE = {
         "SECURE": True,  # force https URLs
-        # optional: configure folder/prefix, transforms, etc.
-        # "STATICFILES_MANIFEST_ROOT": os.path.join(BASE_DIR, "staticfiles"),
+        # You can add folders/transforms here if needed
+        # e.g. "PREFIX": "aerologitech",
     }
 else:
     STORAGES = {
@@ -88,22 +89,27 @@ else:
         "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
     }
 
-# Manifest strictness: True = error at runtime for missing hashed assets.
-# You can override with env: WHITENOISE_MANIFEST_STRICT=false to avoid 500s while iterating.
+# --- Legacy aliases for packages expecting old names (needed by django-cloudinary-storage) ---
+STATICFILES_STORAGE = STORAGES["staticfiles"]["BACKEND"]
+if USE_CLOUDINARY:
+    DEFAULT_FILE_STORAGE = STORAGES["default"]["BACKEND"]
+
+# Manifest strictness (True recommended). Set WHITENOISE_MANIFEST_STRICT=false to avoid 500s during dev.
 WHITENOISE_MANIFEST_STRICT = os.getenv("WHITENOISE_MANIFEST_STRICT", "true").lower() == "true"
 
-MEDIA_URL = "/media/"  # harmless with Cloudinary; useful if falling back locally
+# Harmless with Cloudinary; helpful if falling back locally
+MEDIA_URL = "/media/"
 
 
 # --------------------------------------------------------------------
-# SECURITY (behind Render’s proxy)
+# SECURITY (behind Render proxy)
 # --------------------------------------------------------------------
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_SSL_REDIRECT = os.getenv("SECURE_SSL_REDIRECT", "true").lower() == "true"
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
-# Enable HSTS once HTTPS confirmed end-to-end (set seconds via env)
+# Enable HSTS once HTTPS is fully working end-to-end
 SECURE_HSTS_SECONDS = int(os.getenv("SECURE_HSTS_SECONDS", "0"))
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
@@ -121,7 +127,7 @@ EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "true").lower() == "true"
 
 
 # --------------------------------------------------------------------
-# LOGGING (errors to console for Render logs)
+# LOGGING (errors to console → visible in Render logs)
 # --------------------------------------------------------------------
 LOGGING = {
     "version": 1,
