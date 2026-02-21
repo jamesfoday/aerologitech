@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import os
+from urllib.parse import urlparse
+
 import dj_database_url
 
 from .base import *  # noqa
@@ -22,12 +24,27 @@ else:
         CSRF_TRUSTED_ORIGINS.append("https://*.onrender.com")
 
 # ----- DB
+_db_url = (
+    os.getenv("DATABASE_URL")
+    or os.getenv("DATABASE_INTERNAL_URL")
+    or f"sqlite:///{BASE_DIR}/db.sqlite3"  # type: ignore[name-defined]
+)
+
+_parsed = urlparse(_db_url)
+_host = _parsed.hostname or ""
+
+# Render's internal Postgres endpoint does not speak SSL; keep SSL for public/external URLs.
+_ssl_env = os.getenv("DB_SSL_REQUIRE")
+_ssl_require = (_ssl_env.lower() == "true") if _ssl_env else not ("internal" in _host)
+
+_conn_max_age = int(os.getenv("DB_CONN_MAX_AGE", "600"))
+
 DATABASES = {
     "default": dj_database_url.config(
-        default=os.getenv("DATABASE_URL", f"sqlite:///{BASE_DIR}/db.sqlite3"),  # type: ignore[name-defined]
-        conn_max_age=600,
+        default=_db_url,
+        conn_max_age=_conn_max_age,
         conn_health_checks=True,
-        ssl_require=True,
+        ssl_require=_ssl_require,
     )
 }
 
