@@ -11,6 +11,7 @@ import os
 
 from django.core.asgi import get_asgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+# Default to prod; override with DJANGO_SETTINGS_MODULE for alternate envs
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.prod')
 
 application = get_asgi_application()
