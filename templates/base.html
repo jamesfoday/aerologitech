@@ -32,6 +32,7 @@
           <li><a href="/">Home</a></li>
           <li><a href="{% url 'services:catalog_airport' %}">Services</a></li>
           <li><a href="{% url 'services:catalog_cars' %}">Car Rental</a></li>
+          <li><a href="{% url 'explore:gambia_page' %}">Explore Gambia</a></li>
           <li><a href="{% url 'about' %}">About us</a></li>
           <li><a href="/#contact">Contact us</a></li>
         </ul>
@@ -60,12 +61,12 @@
                 </form>
               {% else %}
                 {% if request.user.is_staff or request.user.is_superuser %}
-                  <a href="/dashboard/" class="nav-login">
+                  <a href="/dashboard/" class="nav-login nav-dashboard-mobile-hide">
                     <span class="login-ico"><i class="bi bi-speedometer2"></i></span>
                     <span class="login-text">Dashboard</span>
                   </a>
                 {% else %}
-                  <a href="{% url 'accounts:dashboard' %}" class="nav-login">
+                  <a href="{% url 'accounts:dashboard' %}" class="nav-login nav-dashboard-mobile-hide">
                     <span class="login-ico"><i class="bi bi-speedometer2"></i></span>
                     <span class="login-text">Dashboard</span>
                   </a>
@@ -94,6 +95,7 @@
         <li><a class="off-link" href="/"><i class="bi bi-house-door me-2"></i> Home</a></li>
         <li><a class="off-link" href="{% url 'services:catalog_airport' %}"><i class="bi bi-airplane me-2"></i> Airport Services</a></li>
         <li><a class="off-link" href="{% url 'services:catalog_cars' %}"><i class="bi bi-car-front me-2"></i> Car Rental</a></li>
+        <li><a class="off-link" href="{% url 'explore:gambia_page' %}"><i class="bi bi-compass me-2"></i> Explore Gambia</a></li>
         <li><a class="off-link" href="{% url 'about' %}"><i class="bi bi-people me-2"></i> About us</a></li>
         <li><a class="off-link" href="/#contact"><i class="bi bi-envelope me-2"></i> Contact us</a></li>
 

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+
+{% block content %}
+<div class="container-fluid mt-3 mb-5">
+  <div class="card p-3">
+    <h5>Delete place</h5>
+    <p class="mb-3">Are you sure you want to delete <strong>{{ place.name }}</strong>?</p>
+    <form method="post">
+      {% csrf_token %}
+      <button class="btn-pill danger" type="submit">Yes, delete</button>
+      <a class="btn-pill ghost" href="{% url 'dashboard:places_list' %}">Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

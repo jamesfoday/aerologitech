@@ -10,7 +10,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-wide">
+<div >
   <section class="hero">
     <video id="heroVideo" src="{% static 'videos/hero.mp4' %}" autoplay muted loop playsinline></video>
     <!-- <div class="hero__text">
@@ -37,30 +37,32 @@
       </a>
     </div>
 
-  <section class="about">
-    <div class="about__media">
-      <img class="about__img-square" src="{% static 'images/about-square.png' %}" alt="About Aircar">
-      <img class="about__img-circle" src="{% static 'images/about-circle.png' %}" alt="Team">
-    </div>
-    <article class="about__card">
-      <h3 class="about__title">About us</h3>
-      <p class="about__text">Aerologictech Limited supports companies and individuals by constantly striving to offer innovative solutions that make their air and travels easier and increase their efficiency and productivity.
 
-Aerologictech Limited offers a tailor-made welcome and support service at Banjul International Airport. 
-We ensure comfort and serenity during guests’ arrival or departure at the airport.</p>
- <a href="{% url 'about' %}" class="btn-link">learn more</a>
-    </article>
+
+  <section class="vip-fasttrack container-wide">
+    <div class="vip-overlay"></div>
+    <div class="vip-content">
+      <div class="vip-media">
+        <img src="{% static 'images/service-img3.png' %}" alt="VIP assistance" class="vip-main">
+      </div>
+      <div class="vip-copy">
+        <h3>VIP Fast-Track Airport Service in The Gambia</h3>
+        <p>Glide past queues with meet-and-greet escorts, lounge guidance, and priority clearance. We handle check-in, immigration, and baggage so you step off the aircraft and straight into comfort.</p>
+      </div>
+    </div>
   </section>
 
-  <div class="section-head">
+
+  <div class="section-head container-wide">
     <h3 class="section-title">Our services</h3>
     <a href="{% url 'services:catalog_airport' %}" class="btn-link">See all</a>
   </div>
 
-  <div class="container catalog-wrap">
+
+  <div class="container catalog-wrap container-wide">
     {% if services %}
       <div class="cards">
-        {% for s in services %}
+        {% for s in services %} 
           <article class="card">
             <div class="card__media">
               {% if s.image %}
@@ -83,17 +85,47 @@ We ensure comfort and serenity during guests’ arrival or departure at the airp
     {% endif %}
   </div>
 
-  <section class="car-cta">
-    <div class="car-cta__card">
-      <img class="car-cta__img" src="{% static 'images/car-hero.png' %}" alt="SUV">
-      <div class="car-cta__text">
-        <h3>Rent A Car <span>With us</span></h3>
-        <a href="{% url 'services:catalog_cars' %}" class="btn-link btn-cta">See cars</a>
-      </div>
+    <section class="about container-wide">
+    <div class="about__media">
+      <img class="about__img-square" src="{% static 'images/about-square.png' %}" alt="About Aircar">
+      <img class="about__img-circle" src="{% static 'images/about-circle.png' %}" alt="Team">
+    </div>
+    <article class="about__card">
+      <h3 class="about__title">About us</h3>
+      <p class="about__text">Aerologictech Limited supports companies and individuals by constantly striving to offer innovative solutions that make their air and travels easier and increase their efficiency and productivity.
+
+Aerologictech Limited offers a tailor-made welcome and support service at Banjul International Airport. 
+We ensure comfort and serenity during guests’ arrival or departure at the airport.</p>
+ <a href="{% url 'about' %}" class="btn-link">learn more</a>
+    </article>
+  </section>
+
+
+  <section class="car-teaser container-wide">
+    <div class="section-head">
+      <h3 class="section-title">Popular Rental Cars</h3>
+      <a href="{% url 'services:catalog_cars' %}" class="btn-link">See all cars</a>
+    </div>
+    <div class="car-grid">
+      {% for car in car_teaser %}
+      <article class="car-card">
+        <div class="car-card__media">
+          <img src="{% static 'images/car-hero.png' %}" alt="{{ car.name }}">
+          <span class="card__price">{{ car.price }}</span>
+          <a href="{% url 'services:catalog_cars' %}" class="card__view">View</a>
+        </div>
+        <div class="car-card__body">
+          <h4 class="car-card__name">{{ car.name }}</h4>
+          <p class="car-card__specs">{{ car.specs }}</p>
+        </div>
+      </article>
+      {% endfor %}
     </div>
   </section>
 
-  <section class="trusted">
+
+
+  <section class="trusted container-wide">
     <h4>Trusted By</h4>
     <div class="bar"></div>
     <div class="logo-rail" aria-label="Trusted partners logos – scrollable">
@@ -107,16 +139,47 @@ We ensure comfort and serenity during guests’ arrival or departure at the airp
   </section>
 
 
-  <section class="contact" id="contact">
-    <div class="contact__left">
+  <div class="section-head mt-5 container-wide">
+    <h3 class="section-title">Explore The Gambia</h3>
+    <a href="{% url 'explore:gambia_page' %}" class="btn-link">See all</a>
+  </div>
+  <div class="container catalog-wrap container-wide">
+    {% if places %}
+      {% include "explore/partials/_places_cards.html" with places=places|slice:":4" %}
+    {% else %}
+      <div class="empty">No places yet.</div>
+    {% endif %}
+  </div>
+  
+
+  <section class="baggage-hero container-wide">
+    <div class="bag-media">
+      <img src="{% static 'images/service-img1.jpg' %}" alt="Baggage claim assistance" class="bag-main">
+      <div class="bag-bubble">
+        <img src="{% static 'images/service-img2.jpg' %}" alt="Friendly agent" class="bag-thumb">
+      </div>
+    </div>
+    <div class="bag-copy">
+      <h3>Baggage claim</h3>
+      <p>
+        Skip the carousel stress. Our baggage claim assistance meets you at arrivals, secures every suitcase,
+        and escorts you straight to your ride. Ideal for families, VIP guests, and travelers with bulky or fragile bags.
+        We handle the lifting; you enjoy the smoothest start to your stay in The Gambia.
+      </p>
+    </div>
+  </section>
+
+
+  <section class="contact container-wide" id="contact">
+    <div class="contact__left cont-public">
       <h5>Get in touch with us</h5>
       <p>Have a question or need a custom transfer? Send a quick message.</p>
     </div>
-    <form method="post" action="/">
+    <form method="post" action="/" class="cont-public">
       {% csrf_token %}
-      <input class="input" type="text" name="name" placeholder="Your name" required>
-      <input class="input" type="email" name="email" placeholder="Your email" required>
-      <input class="input" type="text" name="subject" placeholder="Subject">
+      <input class="input" type="text" name="name" placeholder="Enter your name" required>
+      <input class="input" type="email" name="email" placeholder="Email address" required>
+      <textarea class="input input--textarea" name="message" placeholder="Write your comment" rows="4" required></textarea>
       <button class="btn-primary" type="submit">Send a Message</button>
     </form>
   </section>
@@ -124,8 +187,28 @@ We ensure comfort and serenity during guests’ arrival or departure at the airp
 
 
 
-  <section class="map-tile">
-    <img src="{% static 'images/world-map.png' %}" alt="Global coverage map">
+  <section class="map-tile container-wide">
+    <div class="map-hero">
+      <div class="map-pin-wrap">
+        <div class="map-pin">
+          <span class="map-pin__head"></span>
+          <span class="map-pin__shadow"></span>
+        </div>
+        <span class="map-label">Gambia</span>
+        <div class="map-pop" role="dialog" aria-label="Gambia travel info">
+          <button type="button" class="map-pop__close" aria-label="Close popover">×</button>
+          <div class="map-pop__lead">Gambia is calling?</div>
+          <div class="map-pop__sub">Book our service for hassle-free travel</div>
+          <a class="map-pop__btn" href="{% url 'services:catalog_airport' %}">Services</a>
+          <!-- <div class="map-pop__title">About Gambia</div>
+          <p class="map-pop__desc">
+            The Gambia is a warm river nation on West Africa’s coast, known for welcoming people, lively markets, and wildlife-rich wetlands.
+            From Banjul’s beaches to mangroves along the River Gambia, it blends culture, music, and relaxed coastal life.
+          </p> -->
+          <a class="map-pop__btn ghost" href="{% url 'explore:gambia_page' %}">View places</a>
+        </div>
+      </div>
+    </div>
   </section>
 </div>
 
@@ -148,7 +231,7 @@ We ensure comfort and serenity during guests’ arrival or departure at the airp
 </div>
 
 <!-- Footer  -->
-  <footer class="site-footer">
+  <footer class="site-footer container-wide">
     <div class="site-footer__bar">
       <div class="site-footer__grid">
         <div class="footer-col">

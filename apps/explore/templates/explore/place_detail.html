@@ -1,0 +1,569 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+  .place-detail-shell{
+    max-width:1180px;
+    margin:26px auto 44px;
+    padding:0 14px;
+  }
+  .place-detail-grid{
+    display:grid;
+    grid-template-columns:minmax(0, 2fr) minmax(270px, 1fr);
+    gap:24px;
+    align-items:start;
+  }
+  .place-main-card{
+    background:#f7fcfb;
+    border:1px solid #d9efea;
+    border-radius:24px;
+    padding:16px;
+    box-shadow:0 10px 30px rgba(17,24,39,.08);
+  }
+  .hero-box{
+    position:relative;
+    border-radius:18px;
+    overflow:hidden;
+    background:linear-gradient(135deg,#bde4d6,#b4d7ce);
+    min-height:340px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:zoom-in;
+  }
+  .hero-box img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+  }
+  .hero-noimg{
+    color:#475569;
+    font-weight:700;
+    letter-spacing:.02em;
+  }
+  .hero-view-badge{
+    position:absolute;
+    inset:auto auto 18px 18px;
+    background:rgba(16,185,129,.9);
+    color:#fff;
+    border:0;
+    border-radius:999px;
+    font-weight:800;
+    padding:10px 18px;
+    cursor:pointer;
+    box-shadow:0 10px 20px rgba(0,0,0,.2);
+  }
+  .mini-strip{
+    display:flex;
+    gap:8px;
+    margin-top:12px;
+    overflow-x:auto;
+    padding-bottom:2px;
+  }
+  .mini-thumb{
+    width:78px;
+    height:52px;
+    border-radius:10px;
+    overflow:hidden;
+    border:2px solid #c9e6dc;
+    flex:0 0 auto;
+    cursor:pointer;
+    background:#fff;
+  }
+  .mini-thumb.active{
+    border-color:#16a34a;
+    box-shadow:0 0 0 2px rgba(22,163,74,.2);
+  }
+  .mini-thumb img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+  }
+  .place-content{
+    margin-top:20px;
+    background:#fff;
+    border-radius:18px;
+    border:1px solid #e2e8f0;
+    padding:18px;
+  }
+  .place-title{
+    margin:0;
+    font-size:2rem;
+    line-height:1.1;
+    letter-spacing:.02em;
+    color:#0f172a;
+    font-weight:900;
+  }
+  .place-sub{
+    margin-top:8px;
+    color:#475569;
+    font-weight:600;
+  }
+  .place-desc{
+    margin-top:16px;
+    color:#1e293b;
+    line-height:1.7;
+  }
+  .place-meta{
+    margin-top:14px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .meta-pill{
+    border:1px solid #c7d2fe;
+    color:#1e3a8a;
+    background:#eef2ff;
+    border-radius:999px;
+    padding:6px 10px;
+    font-size:.82rem;
+    font-weight:700;
+  }
+  .action-card{
+    background:#fff;
+    border:1px solid #e2e8f0;
+    border-radius:20px;
+    box-shadow:0 10px 24px rgba(17,24,39,.08);
+    padding:14px;
+    position:sticky;
+    top:90px;
+  }
+  .action-btn{
+    width:100%;
+    border:0;
+    border-radius:14px;
+    color:#fff;
+    font-weight:800;
+    font-size:1.04rem;
+    padding:14px 12px;
+    margin-bottom:10px;
+    background:linear-gradient(135deg,#34d399,#10b981);
+    box-shadow:0 10px 18px rgba(16,185,129,.25);
+    text-decoration:none;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+  }
+  .action-btn.secondary{
+    background:linear-gradient(135deg,#2dd4bf,#14b8a6);
+  }
+  .book-panel{
+    margin-top:8px;
+    padding:14px;
+    border-radius:14px;
+    background:#f8fafc;
+    border:1px solid #e2e8f0;
+    display:none;
+  }
+  .book-panel.show{ display:block; }
+  .book-panel h5{
+    margin:0 0 10px;
+    font-weight:800;
+    color:#0f172a;
+  }
+  .book-field{
+    margin-bottom:10px;
+  }
+  .book-field label{
+    display:block;
+    font-size:.85rem;
+    font-weight:700;
+    color:#334155;
+    margin-bottom:4px;
+  }
+  .book-field input, .book-field textarea, .book-field select{
+    width:100%;
+    border:1px solid #cbd5e1;
+    border-radius:10px;
+    background:#fff;
+    padding:10px 11px;
+    outline:none;
+  }
+  .book-field input:focus, .book-field textarea:focus, .book-field select:focus{
+    border-color:#60a5fa;
+    box-shadow:0 0 0 3px rgba(96,165,250,.2);
+  }
+  .book-submit{
+    width:100%;
+    border:0;
+    border-radius:10px;
+    padding:11px 12px;
+    font-weight:800;
+    color:#fff;
+    background:#2563eb;
+    box-shadow:0 8px 16px rgba(37,99,235,.25);
+  }
+  .book-success{
+    margin-bottom:10px;
+    border-radius:10px;
+    padding:10px 12px;
+    background:#ecfdf5;
+    border:1px solid #86efac;
+    color:#166534;
+    font-weight:700;
+  }
+  .field-error{
+    color:#b91c1c;
+    font-size:.8rem;
+    margin-top:4px;
+  }
+  .lightbox{
+    position:fixed;
+    inset:0;
+    background:rgba(2,6,23,.78);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:9999;
+    padding:20px;
+  }
+  .lightbox.show{ display:flex; }
+  .lightbox-stage{
+    width:min(1100px, 100%);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:14px;
+  }
+  .lightbox-frame{
+    width:100%;
+    border-radius:16px;
+    overflow:hidden;
+    background:#bde4d6;
+    border:3px solid rgba(255,255,255,.85);
+    box-shadow:0 18px 38px rgba(0,0,0,.3);
+    min-height:560px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .lightbox img{
+    width:100%;
+    max-height:78vh;
+    object-fit:contain;
+    border-radius:14px;
+    display:block;
+  }
+  .lightbox-close{
+    position:absolute;
+    top:20px;
+    right:24px;
+    width:36px;
+    height:36px;
+    border-radius:999px;
+    border:0;
+    background:rgba(255,255,255,.2);
+    color:#fff;
+    font-size:1.6rem;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:2;
+  }
+  .lightbox-nav{
+    position:absolute;
+    top:50%;
+    transform:translateY(-50%);
+    width:48px;
+    height:48px;
+    border-radius:999px;
+    border:0;
+    background:rgba(255,255,255,.2);
+    color:#fff;
+    font-size:2rem;
+    line-height:1;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:2;
+    transition:background .2s ease;
+  }
+  .lightbox-nav:hover{ background:rgba(255,255,255,.35); }
+  .lightbox-nav.prev{ left:14px; }
+  .lightbox-nav.next{ right:14px; }
+  .lightbox-strip{
+    display:flex;
+    gap:8px;
+    max-width:100%;
+    overflow-x:auto;
+    padding:2px;
+  }
+  .lightbox-thumb{
+    width:88px;
+    height:56px;
+    border:2px solid rgba(255,255,255,.65);
+    border-radius:8px;
+    overflow:hidden;
+    background:#fff;
+    flex:0 0 auto;
+    cursor:pointer;
+  }
+  .lightbox-thumb.active{
+    border-color:#22c55e;
+    box-shadow:0 0 0 2px rgba(34,197,94,.28);
+  }
+  .lightbox-thumb img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    border-radius:0;
+  }
+  @media (max-width: 900px){
+    .lightbox-frame{ min-height:400px; }
+    .lightbox-nav{ width:42px; height:42px; font-size:1.6rem; }
+    .lightbox-nav.prev{ left:8px; }
+    .lightbox-nav.next{ right:8px; }
+  }
+  @media (max-width: 980px){
+    .place-detail-grid{
+      grid-template-columns:1fr;
+    }
+    .action-card{
+      position:static;
+      top:auto;
+    }
+  }
+  @media (max-width: 680px){
+    .hero-box{ min-height:260px; }
+    .place-title{ font-size:1.55rem; }
+    .lightbox-frame{ min-height:280px; }
+    .lightbox-thumb{ width:74px; height:48px; }
+  }
+</style>
+
+<div class="place-detail-shell">
+  <div class="place-detail-grid">
+    <section class="place-main-card">
+      <div class="hero-box" id="heroBox">
+        {% if place.hero_image %}
+          <img id="heroImage" src="{{ place.hero_image.url }}" alt="{{ place.name }}">
+        {% else %}
+          <div class="hero-noimg">No image available</div>
+        {% endif %}
+        <button type="button" class="hero-view-badge" id="heroViewBtn">View</button>
+      </div>
+
+      <div class="mini-strip" id="miniStrip">
+        {% if place.hero_image %}
+          <button type="button" class="mini-thumb active" data-src="{{ place.hero_image.url }}">
+            <img src="{{ place.hero_image.url }}" alt="{{ place.name }}">
+          </button>
+        {% endif %}
+        {% for img in place.images.all %}
+          <button type="button" class="mini-thumb {% if not place.hero_image and forloop.first %}active{% endif %}" data-src="{{ img.image.url }}">
+            <img src="{{ img.image.url }}" alt="{{ place.name }}">
+          </button>
+        {% endfor %}
+      </div>
+
+      <div class="place-content">
+        <h1 class="place-title">{{ place.name }}</h1>
+        <div class="place-sub">{{ place.get_category_display }} {% if place.region %}• {{ place.region }}{% endif %}</div>
+        <p class="place-desc">{{ place.short_desc }}</p>
+        <div class="place-meta">
+          {% if place.latitude and place.longitude %}
+            <span class="meta-pill">Lat {{ place.latitude }} / Lng {{ place.longitude }}</span>
+          {% endif %}
+          <span class="meta-pill">Tourism & Local Experience</span>
+          <span class="meta-pill">Custom Itinerary Available</span>
+        </div>
+      </div>
+    </section>
+
+    <aside class="action-card">
+      <button type="button" class="action-btn" id="bookToggleBtn">Book Tourism</button>
+      {% if place.map_url %}
+        <a class="action-btn secondary" href="{{ place.map_url }}" target="_blank" rel="noopener">Open in Maps</a>
+      {% endif %}
+
+      <div class="book-panel {% if booking_form.errors or booking_success %}show{% endif %}" id="bookPanel">
+        {% if booking_success %}
+          <div class="book-success">Booking sent. We will contact you shortly.</div>
+        {% endif %}
+        <h5>Tour Booking Form</h5>
+        <form method="post" novalidate>
+          {% csrf_token %}
+          {{ booking_form.non_field_errors }}
+          <div class="book-field">
+            <label for="{{ booking_form.full_name.id_for_label }}">Full name</label>
+            {{ booking_form.full_name }}
+            {% if booking_form.full_name.errors %}<div class="field-error">{{ booking_form.full_name.errors|striptags }}</div>{% endif %}
+          </div>
+          <div class="book-field">
+            <label for="{{ booking_form.email.id_for_label }}">Email</label>
+            {{ booking_form.email }}
+            {% if booking_form.email.errors %}<div class="field-error">{{ booking_form.email.errors|striptags }}</div>{% endif %}
+          </div>
+          <div class="book-field">
+            <label for="{{ booking_form.phone.id_for_label }}">Phone / WhatsApp</label>
+            {{ booking_form.phone }}
+            {% if booking_form.phone.errors %}<div class="field-error">{{ booking_form.phone.errors|striptags }}</div>{% endif %}
+          </div>
+          <div class="book-field">
+            <label for="{{ booking_form.travel_date.id_for_label }}">Travel date</label>
+            {{ booking_form.travel_date }}
+            {% if booking_form.travel_date.errors %}<div class="field-error">{{ booking_form.travel_date.errors|striptags }}</div>{% endif %}
+          </div>
+          <div class="book-field">
+            <label for="{{ booking_form.travelers.id_for_label }}">Number of travelers</label>
+            {{ booking_form.travelers }}
+            {% if booking_form.travelers.errors %}<div class="field-error">{{ booking_form.travelers.errors|striptags }}</div>{% endif %}
+          </div>
+          <div class="book-field">
+            <label for="{{ booking_form.message.id_for_label }}">Notes</label>
+            {{ booking_form.message }}
+            {% if booking_form.message.errors %}<div class="field-error">{{ booking_form.message.errors|striptags }}</div>{% endif %}
+          </div>
+          <button type="submit" class="book-submit">Submit Booking</button>
+        </form>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<div class="lightbox" id="lightbox">
+  <button type="button" class="lightbox-close" id="lightboxClose">×</button>
+  <button type="button" class="lightbox-nav prev" id="lightboxPrev" aria-label="Previous image">‹</button>
+  <div class="lightbox-stage">
+    <div class="lightbox-frame">
+      <img id="lightboxImg" src="" alt="Place image preview">
+    </div>
+    <div class="lightbox-strip" id="lightboxStrip"></div>
+  </div>
+  <button type="button" class="lightbox-nav next" id="lightboxNext" aria-label="Next image">›</button>
+</div>
+
+<script>
+  (function(){
+    const heroBox = document.getElementById("heroBox");
+    const heroImage = document.getElementById("heroImage");
+    const miniStrip = document.getElementById("miniStrip");
+    const pageThumbs = miniStrip ? Array.from(miniStrip.querySelectorAll(".mini-thumb")) : [];
+    const heroViewBtn = document.getElementById("heroViewBtn");
+    const lightbox = document.getElementById("lightbox");
+    const lightboxImg = document.getElementById("lightboxImg");
+    const lightboxClose = document.getElementById("lightboxClose");
+    const lightboxStrip = document.getElementById("lightboxStrip");
+    const lightboxPrev = document.getElementById("lightboxPrev");
+    const lightboxNext = document.getElementById("lightboxNext");
+    const bookToggleBtn = document.getElementById("bookToggleBtn");
+    const bookPanel = document.getElementById("bookPanel");
+    const imageSources = pageThumbs.map((btn)=>btn.getAttribute("data-src")).filter(Boolean);
+    const normalizedSources = imageSources.map((src)=>new URL(src, window.location.href).href);
+    let currentIndex = 0;
+    let lightboxThumbButtons = [];
+
+    function setPageThumbActive(index){
+      pageThumbs.forEach((thumb, i)=>thumb.classList.toggle("active", i === index));
+    }
+    function syncHeroFromIndex(index){
+      const src = imageSources[index];
+      if(heroImage && src){
+        heroImage.src = src;
+        setPageThumbActive(index);
+      }
+    }
+    function indexFromSrc(src){
+      if(!src || !normalizedSources.length) return 0;
+      const norm = new URL(src, window.location.href).href;
+      const idx = normalizedSources.indexOf(norm);
+      return idx >= 0 ? idx : 0;
+    }
+    function buildLightboxStrip(){
+      if(!lightboxStrip) return;
+      lightboxStrip.innerHTML = "";
+      lightboxThumbButtons = [];
+      imageSources.forEach((src, idx)=>{
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "lightbox-thumb";
+        b.setAttribute("data-idx", String(idx));
+        b.innerHTML = `<img src="${src}" alt="thumbnail ${idx + 1}">`;
+        b.addEventListener("click", function(){
+          currentIndex = idx;
+          renderLightbox();
+          syncHeroFromIndex(currentIndex);
+        });
+        lightboxStrip.appendChild(b);
+        lightboxThumbButtons.push(b);
+      });
+    }
+    function renderLightbox(){
+      if(!lightboxImg || !imageSources.length) return;
+      lightboxImg.src = imageSources[currentIndex];
+      lightboxThumbButtons.forEach((b, i)=>b.classList.toggle("active", i === currentIndex));
+    }
+    function openLightbox(index){
+      if(!lightbox || !imageSources.length) return;
+      currentIndex = (index + imageSources.length) % imageSources.length;
+      renderLightbox();
+      lightbox.classList.add("show");
+    }
+    function shiftLightbox(step){
+      if(!imageSources.length) return;
+      currentIndex = (currentIndex + step + imageSources.length) % imageSources.length;
+      renderLightbox();
+      syncHeroFromIndex(currentIndex);
+    }
+
+    if (miniStrip && heroImage){
+      miniStrip.addEventListener("click", function(e){
+        const btn = e.target.closest(".mini-thumb");
+        if(!btn) return;
+        const src = btn.getAttribute("data-src");
+        if(src){
+          currentIndex = indexFromSrc(src);
+          syncHeroFromIndex(currentIndex);
+        }
+      });
+    }
+
+    if (heroViewBtn && heroImage && lightbox){
+      heroViewBtn.addEventListener("click", function(){
+        openLightbox(indexFromSrc(heroImage.src));
+      });
+    }
+    if (heroBox && heroImage && lightbox){
+      heroBox.addEventListener("click", function(e){
+        if(e.target === heroViewBtn) return;
+        openLightbox(indexFromSrc(heroImage.src));
+      });
+    }
+    if (lightboxClose && lightbox){
+      lightboxClose.addEventListener("click", function(){ lightbox.classList.remove("show"); });
+      lightbox.addEventListener("click", function(e){ if(e.target === lightbox) lightbox.classList.remove("show"); });
+      lightboxPrev && lightboxPrev.addEventListener("click", function(e){ e.stopPropagation(); shiftLightbox(-1); });
+      lightboxNext && lightboxNext.addEventListener("click", function(e){ e.stopPropagation(); shiftLightbox(1); });
+      document.addEventListener("keydown", function(e){
+        if(!lightbox.classList.contains("show")) return;
+        if(e.key === "Escape") lightbox.classList.remove("show");
+        if(e.key === "ArrowLeft") shiftLightbox(-1);
+        if(e.key === "ArrowRight") shiftLightbox(1);
+      });
+    }
+
+    if(bookToggleBtn && bookPanel){
+      bookToggleBtn.addEventListener("click", function(){
+        bookPanel.classList.toggle("show");
+      });
+    }
+
+    if(imageSources.length){
+      buildLightboxStrip();
+      const activePageThumb = miniStrip ? miniStrip.querySelector(".mini-thumb.active") : null;
+      currentIndex = activePageThumb ? indexFromSrc(activePageThumb.getAttribute("data-src")) : 0;
+      syncHeroFromIndex(currentIndex);
+    } else {
+      heroViewBtn && heroViewBtn.setAttribute("disabled", "disabled");
+      heroViewBtn && (heroViewBtn.style.opacity = ".6");
+      heroBox && (heroBox.style.cursor = "default");
+    }
+  })();
+</script>
+{% endblock %}

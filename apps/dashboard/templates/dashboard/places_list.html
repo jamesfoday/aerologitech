@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/services.css' %}?v=8">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-3 mb-5 place-shell">
+  <div class="card p-4 round-24">
+    <div class="topbar">
+      <a href="{% url 'dashboard:home' %}" class="back-link">‹ Back</a>
+      <div class="head-center">
+        <h3 class="title">Places</h3>
+        
+      </div>
+      <a href="{% url 'dashboard:places_create' %}" class="btn-create">Create <span class="bi bi-plus"></span></a>
+    </div>
+
+    <form method="get" class="searchbar">
+          <input type="search" name="q" value="{{ q }}" placeholder="Search places...">
+          <button type="submit"><span class="bi bi-search"></span></button>
+        </form>
+
+    <div class="place-gallery">
+      {% for place in places %}
+        <div class="place-card-visual">
+          <div class="thumb-wrap">
+            {% if place.hero_image %}
+              <img src="{{ place.hero_image.url }}" alt="{{ place.name }}">
+            {% else %}
+              <div class="thumb-placeholder">No image</div>
+            {% endif %}
+          </div>
+          <div class="place-card-title">{{ place.name }}</div>
+          <div class="place-card-actions">
+            <a href="{% url 'explore:place_detail' slug=place.slug %}" target="_blank" title="View"><i class="bi bi-eye"></i></a>
+            <a href="{% url 'dashboard:places_edit' pk=place.pk %}" title="Edit"><i class="bi bi-pencil"></i></a>
+            <form method="post" action="{% url 'dashboard:places_delete' pk=place.pk %}" onsubmit="return confirm('Delete this place?');">
+              {% csrf_token %}
+              <button type="submit" title="Delete"><i class="bi bi-trash"></i></button>
+            </form>
+          </div>
+        </div>
+      {% empty %}
+        <div class="empty">No places found.</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -67,6 +67,55 @@
 </style>
 {% endblock %}
 
+{% block extra_js %}
+<script>
+  (function(){
+    const uploader = document.getElementById('uploader');
+    if(!uploader) return;
+    const uploadEmpty = document.getElementById('uploadEmpty');
+    const fileInput = uploader.querySelector('input[type=file]');
+    const previewWrap = document.getElementById('previewWrap');
+    const imgPreview = document.getElementById('imgPreview');
+    const removeBtn = document.getElementById('removeBtn');
+
+    function showPreview(src){
+      if(imgPreview){ imgPreview.src = src; }
+      previewWrap.classList.remove('is-hidden');
+      uploadEmpty.classList.add('is-hidden');
+    }
+    function clearPreview(){
+      if(fileInput) fileInput.value = '';
+      previewWrap.classList.add('is-hidden');
+      uploadEmpty.classList.remove('is-hidden');
+    }
+
+    uploadEmpty?.addEventListener('click', ()=> fileInput && fileInput.click());
+    removeBtn?.addEventListener('click', clearPreview);
+    fileInput?.addEventListener('change', e=>{
+      const f = e.target.files && e.target.files[0];
+      if(!f) return;
+      const reader = new FileReader();
+      reader.onload = ev => showPreview(ev.target.result);
+      reader.readAsDataURL(f);
+    });
+
+    // drag/drop
+    uploader.addEventListener('dragover', e=>{ e.preventDefault(); uploader.classList.add('drag-over'); });
+    uploader.addEventListener('dragleave', ()=> uploader.classList.remove('drag-over'));
+    uploader.addEventListener('drop', e=>{
+      e.preventDefault(); uploader.classList.remove('drag-over');
+      if(e.dataTransfer.files.length){
+        fileInput.files = e.dataTransfer.files;
+        const f = e.dataTransfer.files[0];
+        const reader = new FileReader();
+        reader.onload = ev => showPreview(ev.target.result);
+        reader.readAsDataURL(f);
+      }
+    });
+  })();
+</script>
+{% endblock %}
+
 {% block content %}
 <div class="container wrap">
   <div class="card">
@@ -202,6 +251,33 @@ document.addEventListener("DOMContentLoaded", function(){
     preview.src = PLACEHOLDER_URL;
     showEmpty();
   });
+
+  // Lightweight client-side required checks to avoid server round-trip wiping the file input
+  const formEl = document.querySelector("form.mt-3");
+  if(formEl){
+    formEl.addEventListener("submit", (e)=>{
+      const nameInput  = formEl.querySelector('input[name="name"]');
+      const priceInput = formEl.querySelector('input[name="price"]');
+      let hasError = false;
+      if(nameInput && !nameInput.value.trim()){
+        hasError = true;
+        nameInput.classList.add("is-invalid");
+      } else if(nameInput){ nameInput.classList.remove("is-invalid"); }
+
+      if(priceInput){
+        const val = parseFloat(priceInput.value);
+        if(isNaN(val) || val < 0){
+          hasError = true;
+          priceInput.classList.add("is-invalid");
+        } else { priceInput.classList.remove("is-invalid"); }
+      }
+
+      if(hasError){
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    });
+  }
 });
 </script>
 {% endblock %}

@@ -12,12 +12,40 @@ DEBUG = os.getenv("DEBUG", "false").lower() == "true"
 SECRET_KEY = os.getenv("SECRET_KEY", SECRET_KEY)  # type: ignore[name-defined]
 
 # ----- Hosts / CSRF
+def _clean_host(val: str) -> str:
+    # strip surrounding quotes that sometimes get added in dashboards
+    val = val.strip().strip('"').strip("'")
+    return val
+
 _raw_hosts = os.getenv("ALLOWED_HOSTS", "")
-ALLOWED_HOSTS = [h.strip() for chunk in _raw_hosts.split(",") for h in chunk.split() if h.strip()] or ["*"]
+ALLOWED_HOSTS = [
+    _clean_host(h)
+    for chunk in _raw_hosts.split(",")
+    for h in chunk.split()
+    if _clean_host(h)
+]
+
+# Render exposes the primary domain as RENDER_EXTERNAL_HOSTNAME; include it automatically.
+_render_host = _clean_host(os.getenv("RENDER_EXTERNAL_HOSTNAME", ""))
+if _render_host and _render_host not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(_render_host)
+
+# Some users keep the custom apex in PRIMARY_DOMAIN
+_primary_domain = _clean_host(os.getenv("PRIMARY_DOMAIN", ""))
+if _primary_domain and _primary_domain not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(_primary_domain)
+
+if not ALLOWED_HOSTS:
+    ALLOWED_HOSTS = ["*"]
 
 _raw_csrf = os.getenv("CSRF_TRUSTED_ORIGINS", "")
 if _raw_csrf.strip():
-    CSRF_TRUSTED_ORIGINS = [o.strip() for chunk in _raw_csrf.split(",") for o in chunk.split() if o.strip()]
+    CSRF_TRUSTED_ORIGINS = [
+        _clean_host(o)
+        for chunk in _raw_csrf.split(",")
+        for o in chunk.split()
+        if _clean_host(o)
+    ]
 else:
     CSRF_TRUSTED_ORIGINS = [f"https://{h}" for h in ALLOWED_HOSTS if "." in h and not h.startswith(".")]
     if "https://*.onrender.com" not in CSRF_TRUSTED_ORIGINS:
@@ -32,10 +60,15 @@ _db_url = (
 
 _parsed = urlparse(_db_url)
 _host = _parsed.hostname or ""
+_scheme = _parsed.scheme
 
 # Render's internal Postgres endpoint does not speak SSL; keep SSL for public/external URLs.
 _ssl_env = os.getenv("DB_SSL_REQUIRE")
-_ssl_require = (_ssl_env.lower() == "true") if _ssl_env else not ("internal" in _host)
+# Disable SSL entirely for sqlite or file-based URLs
+if _scheme.startswith("sqlite"):
+    _ssl_require = False
+else:
+    _ssl_require = (_ssl_env.lower() == "true") if _ssl_env else not ("internal" in _host)
 
 _conn_max_age = int(os.getenv("DB_CONN_MAX_AGE", "600"))
 

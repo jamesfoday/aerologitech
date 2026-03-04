@@ -1,0 +1,29 @@
+{% load static %}
+<div class="cards">
+  {% if places %}
+    {% for p in places %}
+      <article class="card">
+        <div class="card__media">
+          {% if p.hero_image %}
+            <img src="{{ p.hero_image.url }}" alt="{{ p.name }}">
+          {% else %}
+            <img src="{% static 'images/service-placeholder.jpg' %}" alt="{{ p.name }}">
+          {% endif %}
+          {% if p.map_url %}
+            <a class="card__view" href="{{ p.map_url }}" target="_blank" rel="noopener">View map</a>
+          {% endif %}
+        </div>
+        <div class="card__body">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="badge bg-info text-dark text-capitalize">{{ p.category }}</span>
+            <small class="text-muted">{{ p.region }}</small>
+          </div>
+          <h3 class="card__name">{{ p.name }}</h3>
+          <p class="card__desc">{{ p.short_desc|truncatechars:120 }}</p>
+        </div>
+      </article>
+    {% endfor %}
+  {% else %}
+    <div class="empty">No places yet.</div>
+  {% endif %}
+</div>

@@ -18,6 +18,7 @@ urlpatterns = [
     path("messages/", include("apps.messages.urls", namespace="messages")),
     path("invoices/", include("apps.invoices.urls")),
     path("services/", include(("apps.services.urls", "services"), namespace="services")),
+    path("", include(("apps.explore.urls", "explore"), namespace="explore")),
 
     # Auth
     path("accounts/", include("django.contrib.auth.urls")),

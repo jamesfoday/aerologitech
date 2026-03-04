@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Explore The Gambia{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'css/public_home.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-wide py-4">
+  <div class="section-head d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+      <p class="text-uppercase text-muted small mb-1">Discover</p>
+      <h2 class="section-title mb-0">Explore The Gambia</h2>
+    </div>
+    <div class="explore-tabs" role="tablist" aria-label="Explore categories">
+      {% for cat in categories %}
+        <button class="explore-tab"
+                hx-get="{% url 'explore:nearby' %}?type={{ cat.code }}"
+                hx-target="#places-results"
+                hx-swap="innerHTML">
+          {{ cat.label }}
+        </button>
+      {% endfor %}
+      <button class="explore-tab explore-tab--all"
+              hx-get="{% url 'explore:nearby' %}"
+              hx-target="#places-results"
+              hx-swap="innerHTML">
+        All
+      </button>
+    </div>
+  </div>
+
+  <div id="places-results" class="mt-3">
+    {% include "explore/partials/_places_cards.html" with places=initial_places %}
+  </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script src="https://unpkg.com/htmx.org@1.9.10"></script>
+<script>
+  (function () {
+    const tabs = document.querySelectorAll(".explore-tab");
+    if (!tabs.length) return;
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", function () {
+        tabs.forEach((t) => t.classList.remove("is-active"));
+        this.classList.add("is-active");
+      });
+    });
+  })();
+</script>
+{% endblock %}

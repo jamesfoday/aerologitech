@@ -1,0 +1,40 @@
+{% load static %}
+<div class="cards">
+  {% if places %}
+    {% for p in places %}
+      {% with name=p.name|default:"Place" %}
+      <article class="card explore-card compact-card">
+        <div class="card__media explore-media">
+          <div class="explore-img-wrap">
+            {% if p.hero_image %}
+              <img src="{{ p.hero_image.url }}" alt="{{ name }}">
+            {% else %}
+              {% with first_gallery=p.images.first %}
+                {% if first_gallery %}
+                  <img src="{{ first_gallery.image.url }}" alt="{{ name }}">
+                {% else %}
+                  <img src="{% static 'images/service-placeholder.jpg' %}" alt="{{ name }}">
+                {% endif %}
+              {% endwith %}
+            {% endif %}
+          </div>
+          {% if p.get_category_display %}
+            <div class="card__price">{{ p.get_category_display }}</div>
+          {% elif p.category %}
+            <div class="card__price">{{ p.category|title }}</div>
+          {% endif %}
+          {% if p.slug %}
+            <a class="card__view" href="{% url 'explore:place_detail' p.slug %}">View</a>
+          {% endif %}
+        </div>
+        <div class="card__body">
+          <h3 class="card__name">{{ name }}</h3>
+          <p class="card__desc">{{ p.short_desc|default:p.region|truncatechars:86 }}</p>
+        </div>
+      </article>
+      {% endwith %}
+    {% endfor %}
+  {% else %}
+    <div class="empty">No places found for this filter.</div>
+  {% endif %}
+</div>

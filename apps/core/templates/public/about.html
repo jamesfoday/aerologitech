@@ -2,60 +2,62 @@
 {% load static %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'css/public_about.css' %}">
+<link rel="stylesheet" href="{% static 'css/public_about.css' %}?v=2">
 <link rel="stylesheet" href="{% static 'css/footer.css' %}">
 
 {% endblock %}
 
 {% block content %}
-<div class="about-container">
-  <!-- Hero -->
-  <section class="about-hero">
-    <img src="{% static 'images/about-hero.jpg' %}" alt="About Aerologictech" class="about-hero__img">
-    <div class="about-hero__label">About us</div>
-  </section>
+<div class="about-shell">
+  <div class="about-grid">
+    <section class="about-main-card">
+      <div class="about-hero-box">
+        <img src="{% static 'images/about-hero.jpg' %}" alt="About Aerologictech">
+        <span class="about-hero-chip">About us</span>
+      </div>
 
-  <!-- Intro Card -->
-  <article class="about-card">
-    <h2 class="about-card__title">About us</h2>
-    <p>
-      Aerologictech Limited supports companies and individuals by constantly striving to offer
-      innovative solutions that make their air and travels easier and increase their efficiency
-      and productivity.
-    </p>
-    <p>
-      Aerologictech Limited offers a tailor-made welcome and support service at Banjul International
-      Airport. We ensure comfort and serenity during guests’ arrival or departure at the airport.
-    </p>
-  </article>
+      <article class="about-content-card">
+        <h1 class="about-title">Aerologictech Limited</h1>
+        <p class="about-subtitle">Premium airport support and travel comfort in The Gambia.</p>
+        <p class="about-text">
+          Aerologictech Limited supports companies and individuals with tailored assistance that makes
+          travel faster, easier, and more productive from the moment you arrive.
+        </p>
+        <p class="about-text">
+          At Banjul International Airport, our team helps travelers bypass long queues, reduce language
+          barriers, and handle airport formalities with calm, professional guidance.
+        </p>
+        <p class="about-text">
+          Available 24/7, 365 days a year, our hostesses deliver discreet and efficient support for
+          arrivals and departures, turning potential travel stress into a smooth experience.
+        </p>
+        <div class="about-tag-row">
+          <span class="about-tag">Airport Meet &amp; Greet</span>
+          <span class="about-tag">Fast-Track Assistance</span>
+          <span class="about-tag">Travel Comfort</span>
+          <span class="about-tag">24/7 Availability</span>
+        </div>
+      </article>
 
-  <!-- Story Card -->
-  <article class="about-card">
-    <p>
-      Journey becomes an easy, fast and hassle-free experience with our hostesses. Our efforts are
-      primarily focused on helping to bypass long lines, remove language barriers and make passing
-      through the airport easy. All the most minor needs are anticipated, and all the formalities
-      related to the travel become a moment of pleasure.
-    </p>
-    <p>
-      Whether it is arrival or departure at the Banjul International Airport, the expertise and rigour
-      of our hostesses will transform guests’ difficulties into solutions. Recruited according to
-      criteria specific to our business, they provide every guest with excellent service. Smiling,
-      discreet and efficient, they welcome you and accompany you 365 days a year and 24 hours a day.
-    </p>
-    <p>
-      Aerologictech Limited enabling development on the international scene. Thanks to this cooperation,
-      fostered by a shared vision of the future. The two companies are helping to structure the Gambian
-      scene in the global security and services industry.
-    </p>
-  </article>
+      <section class="about-map-card">
+        <h3 class="about-map-title">Global Reach, Gambian Expertise</h3>
+        <div class="about-map-wrap">
+          <img src="{% static 'images/world-map.png' %}" alt="World map showing The Gambia" class="about-map-img">
+        </div>
+        <p class="about-map-caption">Book your next airport journey with confidence.</p>
+      </section>
+    </section>
 
-  <!-- Map card -->
-  <section class="about-map">
-    <img src="{% static 'images/world-map.png' %}" alt="World map" class="about-map__img">
-    <div class="about-map__caption">Book Your Next Adventure with us</div>
-  </section>
-
+    <aside class="about-side-card">
+      <h2 class="about-side-title">Plan Your Next Trip</h2>
+      <p class="about-side-text">
+        Explore our airport support options or discover curated places across The Gambia.
+      </p>
+      <a href="{% url 'services:list' %}" class="about-action-btn">View Services</a>
+      <a href="{% url 'explore:gambia_page' %}" class="about-action-btn about-action-btn--alt">Explore Gambia</a>
+      <a href="{% url 'home' %}#contact" class="about-action-btn about-action-btn--ghost">Contact Us</a>
+    </aside>
+  </div>
 </div>
 
  <!-- Footer  -->

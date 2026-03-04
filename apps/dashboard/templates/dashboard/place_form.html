@@ -1,0 +1,323 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/services.css' %}">
+<style>
+  :root{ --brand:#2f80ed; --tile:#edf4fa; --ink:#0f172a; --muted:#6b7280; }
+  .place-upload-tile.uploader{
+    padding:14px; border-radius:12px; background:linear-gradient(135deg,#0E98D6 0%, #FCCB56 100%);
+    position:relative;
+    overflow:hidden;
+    min-height:132px;
+  }
+  .upload-empty{
+    width:100%; min-height:104px; border-radius:12px; border:2px dashed rgba(255,255,255,.65);
+    background:transparent; color:#fff; display:flex; align-items:center; justify-content:center; gap:14px;
+    cursor:pointer; user-select:none; transition:filter .15s ease, transform .1s ease;
+  }
+  .upload-empty:hover{ filter:brightness(.98); }
+  .upload-empty:active{ transform:scale(.998); }
+  .up-icon{ font-size:30px; line-height:1; display:flex; align-items:center; }
+  .up-title{ font-weight:800; }
+  .up-sub{ font-size:12px; opacity:.9; }
+  .uploader.drag-over .upload-empty{
+    border-color:#fff; box-shadow:0 0 0 3px rgba(255,255,255,.25) inset;
+  }
+  .preview-wrap{
+    position:absolute; top:12px; left:12px;
+    width:78px; height:78px; border-radius:999px;
+    background:#fff; border:4px solid #fff;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 0 0 4px rgba(171, 222, 255, 0.95), 0 8px 18px rgba(16,24,40,.18);
+    overflow:hidden;
+    z-index:4;
+  }
+  .preview{ width:100%; height:100%; object-fit:cover; display:block; border-radius:999px; }
+  .is-hidden{ display:none !important; }
+  .remove-btn{
+    position:absolute; top:12px; right:15px;
+    width:24px; height:24px; border-radius:999px;
+    background:#1f9be0; color:#fff; border:2px solid #fff;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:900; line-height:1; cursor:pointer;
+    box-shadow:0 4px 10px rgba(16,24,40,.18);
+  }
+  .remove-btn:hover{ filter:brightness(1.05); }
+  .preview-upload-btn{
+    position:absolute; top:50%; left:50%;
+    min-width:52px; height:20px; border-radius:999px;
+    background:#1f9be0; color:#fff; border:2px solid #fff;
+    font-size:10px; font-weight:700; line-height:1;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; box-shadow:0 3px 8px rgba(16,24,40,.18);
+    padding:0 8px;
+    z-index:4;
+  }
+  .preview-upload-btn:hover{ filter:brightness(1.05); }
+  .django-file-wrap{ display:none; }
+  .thumb-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    min-height:82px;
+    padding-left:106px;
+    position:relative;
+    z-index:2;
+    overflow-x:auto;
+    scrollbar-width:thin;
+  }
+  .thumb{
+    position:absolute;
+    width:64px !important; height:64px !important; border-radius:999px; overflow:hidden;
+    background:#fff; box-shadow:0 0 0 2px rgba(171, 222, 255, 0.95), 0 4px 10px rgba(16,24,40,.12);
+    border:3px solid #fff; flex:0 0 58px;
+  }
+  .thumb img{ width:100%; height:100%; object-fit:cover; display:block; border-radius:999px; }
+  .thumb-remove{
+    position:absolute; top:7px; right:11px;
+    width:18px; height:18px; border-radius:999px; border:2px solid #fff;
+    background:#1f9be0; color:#fff; font-size:11px; line-height:1;
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+    box-shadow:0 3px 8px rgba(16,24,40,.18);
+  }
+  @media (max-width: 768px){
+    .preview-wrap{ width:64px; height:64px; }
+    .preview-upload-btn{ top:50%; left:50%; min-width:48px; }
+    .thumb-row{ padding-left:86px; min-height:70px; }
+    .thumb{ width:50px; height:50px; flex-basis:50px; }
+  }
+</style>
+{% endblock %}
+
+
+{% block content %}
+<div class="container-fluid mt-3 mb-5 place-shell">
+  <div class="places-card shadow-soft">
+    <div class="places-head">
+      <a href="{% url 'dashboard:places_list' %}" class="back-link">‹ Back</a>
+      <h3 class="places-title">{% if is_edit %}Edit Place{% else %}Create Place{% endif %}</h3>
+      <span></span>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" class="place-form">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+
+      <div class="place-upload-tile uploader mb-3" id="uploader">
+        {% if place and place.hero_image %}
+          <div class="preview-wrap" id="previewWrap">
+            <img class="preview" id="imgPreview" src="{{ place.hero_image.url }}" alt="{{ place.name }}">
+            <button type="button" class="remove-btn" id="removeBtn" aria-label="Remove image">×</button>
+          </div>
+          <button type="button" class="preview-upload-btn" id="previewUploadBtn">Upload</button>
+        {% endif %}
+        <button type="button" class="upload-empty {% if place and place.hero_image %}is-hidden{% endif %}" id="uploadEmpty">
+          <div class="up-icon"><i class="bi bi-cloud-arrow-up"></i></div>
+          <div>
+            <div class="up-title">Upload hero image</div>
+            <div class="up-sub">Click or drag & drop</div>
+          </div>
+        </button>
+        <div class="django-file-wrap" aria-hidden="true">
+          <input type="file" name="hero_image" id="heroImageInput" multiple accept="image/*">
+        </div>
+        <div class="thumb-row" id="thumbRow">
+          {% if place %}
+            {% for img in place.images.all %}
+              <div class="thumb thumb-existing"><img src="{{ img.image.url }}" alt="{{ place.name }}"></div>
+            {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="form-grid">
+        {% for field in form %}
+          {% if field.name != "hero_image" %}
+            <div class="form-group">
+              <label class="form-label fw-semibold">{{ field.label }}</label>
+              {{ field }}
+              {% if field.errors %}<div class="text-danger small">{{ field.errors|striptags }}</div>{% endif %}
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+
+      <div class="form-actions">
+        <a class="btn-pill ghost" href="{% url 'dashboard:places_list' %}">Cancel</a>
+        <button class="btn-pill" type="submit">{% if is_edit %}Update{% else %}Create{% endif %}</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block body_end %}
+<script>
+  document.addEventListener('DOMContentLoaded', function(){
+    const uploadEmpty = document.getElementById('uploadEmpty');
+    const fileInput = document.getElementById('heroImageInput');
+    const uploader = document.getElementById('uploader');
+    const thumbRow = document.getElementById('thumbRow');
+    let previewWrap = document.getElementById('previewWrap');
+    if(!previewWrap){
+      previewWrap = document.createElement('div');
+      previewWrap.id = 'previewWrap';
+      previewWrap.className = 'preview-wrap is-hidden';
+      const img = document.createElement('img');
+      img.id = 'imgPreview';
+      img.className = 'preview';
+      previewWrap.appendChild(img);
+      const btn = document.createElement('button');
+      btn.type='button';
+      btn.id='removeBtn';
+      btn.className='remove-btn';
+      btn.innerText='×';
+      btn.setAttribute('aria-label','Remove image');
+      previewWrap.appendChild(btn);
+      uploader.prepend(previewWrap);
+    }
+    let previewUploadBtn = document.getElementById('previewUploadBtn');
+    if(!previewUploadBtn){
+      previewUploadBtn = document.createElement('button');
+      previewUploadBtn.type='button';
+      previewUploadBtn.id='previewUploadBtn';
+      previewUploadBtn.className='preview-upload-btn is-hidden';
+      previewUploadBtn.innerText='Upload';
+      uploader.prepend(previewUploadBtn);
+    }
+    const imgPreview = document.getElementById('imgPreview');
+    const removeBtn = document.getElementById('removeBtn');
+    const existingPreviewSrc = imgPreview && !previewWrap.classList.contains('is-hidden') ? imgPreview.src : '';
+    const existingThumbs = Array.from(thumbRow.querySelectorAll('.thumb-existing img')).map((img)=>img.src);
+    let selectedFiles = [];
+
+    function showPreview(src){
+      imgPreview.src = src;
+      previewWrap.classList.remove('is-hidden');
+      uploadEmpty.classList.add('is-hidden');
+      previewUploadBtn.classList.remove('is-hidden');
+    }
+    function syncInputFromSelected(){
+      const dt = new DataTransfer();
+      selectedFiles.forEach((f)=>dt.items.add(f));
+      fileInput.files = dt.files;
+    }
+    function addThumb(src, fileIndex){
+      const t = document.createElement('div');
+      t.className = 'thumb';
+      const im = document.createElement('img');
+      im.src = src;
+      t.appendChild(im);
+      if(fileIndex !== null){
+        const x = document.createElement('button');
+        x.type = 'button';
+        x.className = 'thumb-remove';
+        x.innerText = '×';
+        x.addEventListener('click', (e)=>{
+          e.stopPropagation();
+          removeAt(fileIndex);
+        });
+        t.appendChild(x);
+      }
+      thumbRow.appendChild(t);
+    }
+    function renderFromSelection(){
+      thumbRow.innerHTML = '';
+      existingThumbs.forEach((src)=>addThumb(src, null));
+
+      if(selectedFiles.length === 0){
+        if(existingPreviewSrc){
+          showPreview(existingPreviewSrc);
+        }else{
+          previewWrap.classList.add('is-hidden');
+          uploadEmpty.classList.remove('is-hidden');
+          previewUploadBtn.classList.add('is-hidden');
+        }
+        return;
+      }
+
+      const mainUrl = URL.createObjectURL(selectedFiles[0]);
+      showPreview(mainUrl);
+
+      for(let i=1; i<selectedFiles.length; i++){
+        const url = URL.createObjectURL(selectedFiles[i]);
+        addThumb(url, i);
+      }
+    }
+    function removeAt(idx){
+      if(idx < 0 || idx >= selectedFiles.length) return;
+      selectedFiles.splice(idx, 1);
+      syncInputFromSelected();
+      renderFromSelection();
+    }
+    function addFiles(fileList){
+      const incoming = Array.from(fileList || []).filter((f)=>f && f.type && f.type.startsWith('image/'));
+      if(!incoming.length) return;
+      const existingKeys = new Set(selectedFiles.map((f)=>`${f.name}-${f.size}-${f.lastModified}`));
+      incoming.forEach((f)=>{
+        const key = `${f.name}-${f.size}-${f.lastModified}`;
+        if(!existingKeys.has(key)){
+          selectedFiles.push(f);
+          existingKeys.add(key);
+        }
+      });
+      syncInputFromSelected();
+      renderFromSelection();
+    }
+
+    uploadEmpty.addEventListener('click', ()=> fileInput && fileInput.click());
+    previewWrap.addEventListener('click', (e)=>{
+      if(e.target === removeBtn || e.target === previewUploadBtn) return;
+      fileInput && fileInput.click();
+    });
+    previewUploadBtn && previewUploadBtn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      fileInput && fileInput.click();
+    });
+    removeBtn && removeBtn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      if(selectedFiles.length){ removeAt(0); }
+    });
+    fileInput && fileInput.addEventListener('change', (e)=>{
+      addFiles(e.target.files);
+    });
+    // drag/drop
+    uploader.addEventListener('dragover', e=>{ e.preventDefault(); uploader.classList.add('drag-over'); });
+    uploader.addEventListener('dragleave', ()=> uploader.classList.remove('drag-over'));
+    uploader.addEventListener('drop', e=>{
+      e.preventDefault(); uploader.classList.remove('drag-over');
+      if(!fileInput) return;
+      if(e.dataTransfer.files.length){ addFiles(e.dataTransfer.files); }
+    });
+
+    // Lightweight required-field check to avoid losing files on server round-trip
+    const formEl = document.querySelector('form.place-form');
+    if(formEl){
+      formEl.addEventListener('submit', (e)=>{
+        const nameInput = formEl.querySelector('input[name="name"]');
+        const catInput  = formEl.querySelector('select[name="category"]');
+        const regionInp = formEl.querySelector('input[name="region"]');
+        const descInp   = formEl.querySelector('textarea[name="short_desc"]');
+        let hasError = false;
+        [nameInput, catInput, regionInp, descInp].forEach(inp=>{
+          if(!inp) return;
+          if(!inp.value || !inp.value.toString().trim()){
+            hasError = true;
+            inp.classList.add('is-invalid');
+          }else{
+            inp.classList.remove('is-invalid');
+          }
+        });
+        if(hasError){
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      });
+    }
+
+    renderFromSelection();
+  });
+</script>
+{% endblock %}

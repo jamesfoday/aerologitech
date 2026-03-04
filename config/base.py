@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     "apps.orders",
     "apps.messages.apps.AircarMessagesConfig",
     "apps.invoices",
+    "apps.explore",
 ]
 
 MIDDLEWARE = [
@@ -98,3 +99,11 @@ MEDIA_ROOT = BASE_DIR / "media"
 # ------------------------------------------------------------------ App specifics
 LOGIN_REDIRECT_URL = "/users/route-after-login/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# -------------------- Explore / Google Places -------------------- #
+GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY", "")
+EXPLORE_USE_GOOGLE_PLACES = os.getenv("EXPLORE_USE_GOOGLE_PLACES", "true").lower() == "true"
+EXPLORE_CACHE_TTL_NEARBY = int(os.getenv("EXPLORE_CACHE_TTL_NEARBY", "86400"))  # 24h
+EXPLORE_CACHE_TTL_DETAILS = int(os.getenv("EXPLORE_CACHE_TTL_DETAILS", "604800"))  # 7d
+EXPLORE_MAX_RESULTS = int(os.getenv("EXPLORE_MAX_RESULTS", "10"))
+EXPLORE_DAILY_CAP = int(os.getenv("EXPLORE_DAILY_CAP", "500"))

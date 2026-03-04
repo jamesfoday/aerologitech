@@ -8,6 +8,25 @@
 {% block content %}
 <div class="orders-wrap container py-4">
   <div class="orders-card card p-4 round-24">
+    <div class="orders-tabs mb-3" role="tablist" aria-label="Order categories">
+      <a href="{% url 'orders:list' %}?tab=all{% if q %}&q={{ q }}{% endif %}{% if date_range %}&range={{ date_range }}{% endif %}"
+         class="orders-tab {% if tab == 'all' %}is-active{% endif %}">
+        All
+      </a>
+      <a href="{% url 'orders:list' %}?tab=service{% if q %}&q={{ q }}{% endif %}{% if date_range %}&range={{ date_range }}{% endif %}"
+         class="orders-tab {% if tab == 'service' %}is-active{% endif %}">
+        Services
+      </a>
+      <a href="{% url 'orders:list' %}?tab=car{% if q %}&q={{ q }}{% endif %}{% if date_range %}&range={{ date_range }}{% endif %}"
+         class="orders-tab {% if tab == 'car' %}is-active{% endif %}">
+        Car Rental
+      </a>
+      <a href="{% url 'orders:list' %}?tab=tourism{% if q %}&q={{ q }}{% endif %}{% if date_range %}&range={{ date_range }}{% endif %}"
+         class="orders-tab {% if tab == 'tourism' %}is-active{% endif %}">
+        Tourism
+      </a>
+    </div>
+
     <!-- Top: Back + Filters + Search -->
     <div class="orders-top d-flex align-items-center flex-wrap gap-3 mb-3">
       <a href="/dashboard/" class="orders-back d-inline-flex align-items-center text-decoration-none">
@@ -15,25 +34,27 @@
       </a>
 
       <div class="orders-filters btn-group" role="group" aria-label="Range filters">
-        <a href="{% url 'orders:list' %}?range=week{% if q %}&q={{ q }}{% endif %}"
+        <a href="{% url 'orders:list' %}?tab={{ tab }}&range=week{% if q %}&q={{ q }}{% endif %}"
            class="btn btn-pill btn-sm {% if date_range in 'week 7' %}btn-active{% endif %}">
           Last 7 days
         </a>
-        <a href="{% url 'orders:list' %}?range=month{% if q %}&q={{ q }}{% endif %}"
+        <a href="{% url 'orders:list' %}?tab={{ tab }}&range=month{% if q %}&q={{ q }}{% endif %}"
            class="btn btn-pill btn-sm {% if date_range in 'month 30' %}btn-active{% endif %}">
           Last 30 days
         </a>
-        <a href="{% url 'orders:list' %}{% if q %}?q={{ q }}{% endif %}"
+        <a href="{% url 'orders:list' %}?tab={{ tab }}{% if q %}&q={{ q }}{% endif %}"
            class="btn btn-pill btn-sm {% if not date_range %}btn-active{% endif %}">
           All time
         </a>
       </div>
 
       <form method="get" class="orders-search ms-auto">
+        <input type="hidden" name="tab" value="{{ tab }}">
         <input type="hidden" name="range" value="{{ date_range }}">
         <div class="input-group">
           <input name="q" value="{{ q }}" class="form-control form-control-lg orders-search-input"
-                 placeholder="Search orders (name, status, category)…" aria-label="Search orders">
+                 placeholder="{% if tab == 'tourism' %}Search tourism bookings…{% else %}Search orders (name, status, category)…{% endif %}"
+                 aria-label="Search orders">
           <button class="btn btn-outline-secondary btn-lg orders-search-btn" type="submit">
             <i class="bi bi-search"></i>
           </button>
@@ -44,41 +65,69 @@
     <!-- List -->
     {% if page_obj and page_obj.object_list %}
       <div class="orders-list mt-2">
-        {% for o in page_obj.object_list %}
-          <div class="list-tile d-flex align-items-center justify-content-between">
-            <div class="tile-left">
-              <div class="tile-line fw-semibold">
-                {{ o.get_category_display|default:o.category }}
-                • €{{ o.amount }} {{ o.currency|default:"" }}
-                • <span class="order-status badge-soft">{{ o.status|default:"—" }}</span>
+        {% if tab == 'tourism' %}
+          {% for b in page_obj.object_list %}
+            <div class="list-tile d-flex align-items-center justify-content-between">
+              <div class="tile-left">
+                <div class="tile-line fw-semibold">
+                  {{ b.place.name }}
+                  • {{ b.travelers }} traveler{{ b.travelers|pluralize }}
+                  • <span class="order-status badge-soft">{{ b.get_status_display|default:b.status }}</span>
+                </div>
+                <div class="tile-sub text-muted small">
+                  {{ b.full_name|default:"—" }} • {{ b.email|default:"—" }} • {{ b.travel_date|date:"M d, Y" }}
+                </div>
               </div>
-              <div class="tile-sub text-muted small">
-                {{ o.customer_name|default:"—" }} • {{ o.created_at|date:"M d, Y H:i" }}
+              <div class="tile-right">
+                <a href="{% url 'explore:place_detail' b.place.slug %}" class="btn btn-light btn-sm tile-view-btn">
+                  <i class="bi bi-eye me-1"></i> View Place
+                </a>
               </div>
             </div>
-            <div class="tile-right">
-              <a href="{% url 'orders:detail' o.id %}" class="btn btn-light btn-sm tile-view-btn">
-                <i class="bi bi-eye me-1"></i> View
-              </a>
+          {% endfor %}
+        {% else %}
+          {% for o in page_obj.object_list %}
+            <div class="list-tile d-flex align-items-center justify-content-between">
+              <div class="tile-left">
+                <div class="tile-line fw-semibold">
+                  {{ o.get_category_display|default:o.category }}
+                  • €{{ o.amount }} {{ o.currency|default:"" }}
+                  • <span class="order-status badge-soft">{{ o.status|default:"—" }}</span>
+                </div>
+                <div class="tile-sub text-muted small">
+                  {{ o.customer_name|default:"—" }} • {{ o.created_at|date:"M d, Y H:i" }}
+                </div>
+              </div>
+              <div class="tile-right">
+                <a href="{% url 'orders:detail' o.id %}" class="btn btn-light btn-sm tile-view-btn">
+                  <i class="bi bi-eye me-1"></i> View
+                </a>
+              </div>
             </div>
-          </div>
-        {% endfor %}
+          {% endfor %}
+        {% endif %}
       </div>
 
       <!-- Pager -->
       <nav class="orders-pager d-flex gap-2 justify-content-center mt-3" aria-label="Orders pages">
         <a class="page-link-soft {% if not page_obj.has_previous %}is-disabled{% endif %}"
-           href="{% if page_obj.has_previous %}?q={{ q }}&range={{ date_range }}&page={{ page_obj.previous_page_number }}{% else %}#{% endif %}">
+           href="{% if page_obj.has_previous %}?tab={{ tab }}&q={{ q }}&range={{ date_range }}&page={{ page_obj.previous_page_number }}{% else %}#{% endif %}">
           Previous
         </a>
         <span class="page-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
         <a class="page-link-soft {% if not page_obj.has_next %}is-disabled{% endif %}"
-           href="{% if page_obj.has_next %}?q={{ q }}&range={{ date_range }}&page={{ page_obj.next_page_number }}{% else %}#{% endif %}">
+           href="{% if page_obj.has_next %}?tab={{ tab }}&q={{ q }}&range={{ date_range }}&page={{ page_obj.next_page_number }}{% else %}#{% endif %}">
           Next
         </a>
       </nav>
     {% else %}
-      <div class="empty">No orders match your filters.</div>
+      <div class="empty">
+        {% if tab == 'tourism' %}
+          No tourism bookings match your filters.
+        {% else %}
+          No orders match your filters.
+        {% endif %}
+      </div>
     {% endif %}
   </div>
 </div>

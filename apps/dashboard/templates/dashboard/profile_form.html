@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<style>
+  .profile-edit-shell{ max-width: 760px; margin: 22px auto 44px; }
+  .profile-edit-card{
+    background:#fff;
+    border-radius:20px;
+    box-shadow:0 12px 30px rgba(15,23,42,.08);
+    padding:22px;
+  }
+  .profile-block{
+    border:1px solid #e2e8f0;
+    border-radius:16px;
+    padding:16px;
+    background:#fff;
+    margin-top:14px;
+  }
+  .profile-block-title{
+    font-size:1.1rem;
+    font-weight:800;
+    color:#0f172a;
+    margin:0 0 12px;
+  }
+  .profile-edit-head{
+    display:grid;
+    grid-template-columns:auto 1fr auto;
+    align-items:center;
+    gap:12px;
+    margin-bottom:16px;
+  }
+  .profile-edit-title{
+    margin:0;
+    text-align:center;
+    font-weight:800;
+    color:#2563eb;
+  }
+  .profile-edit-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+  }
+  .profile-edit-grid .full{ grid-column:1 / -1; }
+  .profile-edit-field label{
+    display:block;
+    font-weight:700;
+    color:#0f172a;
+    margin-bottom:6px;
+  }
+  .profile-edit-field input{
+    width:100%;
+    border:1px solid #e2e8f0;
+    border-radius:12px;
+    padding:10px 12px;
+    background:#f8fafc;
+    outline:none;
+  }
+  .profile-edit-field input:focus{
+    border-color:#60a5fa;
+    box-shadow:0 0 0 3px rgba(37,99,235,.12);
+  }
+  .profile-edit-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    margin-top:16px;
+  }
+  @media (max-width: 640px){
+    .profile-edit-shell{ margin: 14px auto 28px; }
+    .profile-edit-card{ padding:16px; }
+    .profile-edit-head{ grid-template-columns:1fr; text-align:center; }
+    .profile-edit-grid{ grid-template-columns:1fr; }
+    .profile-edit-actions{ flex-direction:column; }
+    .profile-edit-actions .btn-pill{ width:100%; text-align:center; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid profile-edit-shell">
+  <div class="profile-edit-card">
+    <div class="profile-edit-head">
+      <a href="{% url 'dashboard:home' %}" class="back-link">‹ Back</a>
+      <h3 class="profile-edit-title">Edit Profile</h3>
+      <span></span>
+    </div>
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <input type="hidden" name="form_type" value="profile">
+      {{ form.non_field_errors }}
+      <div class="profile-block">
+        <h4 class="profile-block-title">Profile Details</h4>
+        <div class="profile-edit-grid">
+          <div class="profile-edit-field">
+            <label for="{{ form.first_name.id_for_label }}">First name</label>
+            {{ form.first_name }}
+            {% if form.first_name.errors %}<div class="text-danger small mt-1">{{ form.first_name.errors|striptags }}</div>{% endif %}
+          </div>
+          <div class="profile-edit-field">
+            <label for="{{ form.last_name.id_for_label }}">Last name</label>
+            {{ form.last_name }}
+            {% if form.last_name.errors %}<div class="text-danger small mt-1">{{ form.last_name.errors|striptags }}</div>{% endif %}
+          </div>
+          <div class="profile-edit-field full">
+            <label for="{{ form.email.id_for_label }}">Email</label>
+            {{ form.email }}
+            {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors|striptags }}</div>{% endif %}
+          </div>
+        </div>
+      </div>
+      <div class="profile-edit-actions">
+        <a href="{% url 'dashboard:home' %}" class="btn-pill ghost text-decoration-none">Cancel</a>
+        <button type="submit" class="btn-pill">Save Profile</button>
+      </div>
+    </form>
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <input type="hidden" name="form_type" value="password">
+      {{ password_form.non_field_errors }}
+      <div class="profile-block">
+        <h4 class="profile-block-title">Change Password</h4>
+        <div class="profile-edit-grid">
+          <div class="profile-edit-field full">
+            <label for="{{ password_form.old_password.id_for_label }}">Current password</label>
+            {{ password_form.old_password }}
+            {% if password_form.old_password.errors %}<div class="text-danger small mt-1">{{ password_form.old_password.errors|striptags }}</div>{% endif %}
+          </div>
+          <div class="profile-edit-field">
+            <label for="{{ password_form.new_password1.id_for_label }}">New password</label>
+            {{ password_form.new_password1 }}
+            {% if password_form.new_password1.errors %}<div class="text-danger small mt-1">{{ password_form.new_password1.errors|striptags }}</div>{% endif %}
+          </div>
+          <div class="profile-edit-field">
+            <label for="{{ password_form.new_password2.id_for_label }}">Confirm new password</label>
+            {{ password_form.new_password2 }}
+            {% if password_form.new_password2.errors %}<div class="text-danger small mt-1">{{ password_form.new_password2.errors|striptags }}</div>{% endif %}
+          </div>
+        </div>
+      </div>
+      <div class="profile-edit-actions">
+        <button type="submit" class="btn-pill">Change Password</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

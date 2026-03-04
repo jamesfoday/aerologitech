@@ -14,20 +14,42 @@ from django.views.decorators.http import require_POST
 
 from .models import Order
 from apps.services.models import AirportService, Car
+from apps.explore.models import PlaceBooking
 
 
 @login_required
 def orders_list(request: HttpRequest):
     q = (request.GET.get("q") or "").strip()
     date_range = (request.GET.get("range") or "").lower()
-    qs = Order.objects.all().order_by("-created_at")
+    tab = (request.GET.get("tab") or "all").lower()
+    valid_tabs = {"all", "service", "car", "tourism"}
+    if tab not in valid_tabs:
+        tab = "all"
 
-    if q:
-        qs = qs.filter(
-            Q(customer_name__icontains=q)
-            | Q(status__icontains=q)
-            | Q(category__icontains=q)
-        )
+    if tab == "tourism":
+        qs = PlaceBooking.objects.select_related("place").order_by("-created_at")
+
+        if q:
+            qs = qs.filter(
+                Q(full_name__icontains=q)
+                | Q(email__icontains=q)
+                | Q(phone__icontains=q)
+                | Q(status__icontains=q)
+                | Q(place__name__icontains=q)
+            )
+    else:
+        qs = Order.objects.all().order_by("-created_at")
+        if tab == "service":
+            qs = qs.filter(category=Order.Category.AIRPORT_SERVICE)
+        elif tab == "car":
+            qs = qs.filter(category=Order.Category.CAR_RENTAL)
+
+        if q:
+            qs = qs.filter(
+                Q(customer_name__icontains=q)
+                | Q(status__icontains=q)
+                | Q(category__icontains=q)
+            )
 
     if date_range in {"week", "7"}:
         since = timezone.now() - timedelta(days=7)
@@ -40,6 +62,7 @@ def orders_list(request: HttpRequest):
     return render(request, "orders/orders_list.html", {
         "q": q,
         "date_range": date_range,
+        "tab": tab,
         "page_obj": page_obj,
     })
 
