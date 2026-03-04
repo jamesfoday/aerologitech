@@ -17,21 +17,54 @@ def _clean_host(val: str) -> str:
     val = val.strip().strip('"').strip("'")
     return val
 
+
+def _to_host(val: str) -> str:
+    val = _clean_host(val)
+    if not val:
+        return ""
+
+    if val.startswith(("http://", "https://")):
+        parsed = urlparse(val)
+        val = parsed.netloc or parsed.path
+
+    val = val.strip().strip("/")
+    if ":" in val and not val.startswith("["):
+        # keep host-only for ALLOWED_HOSTS
+        val = val.split(":", 1)[0]
+    return val
+
+
+def _to_origin(val: str) -> str:
+    val = _clean_host(val)
+    if not val:
+        return ""
+
+    if val.startswith(("http://", "https://")):
+        return val.rstrip("/")
+
+    host = _to_host(val)
+    if not host:
+        return ""
+
+    if host.startswith("localhost") or host.startswith("127."):
+        return f"http://{host}"
+    return f"https://{host}"
+
 _raw_hosts = os.getenv("ALLOWED_HOSTS", "")
 ALLOWED_HOSTS = [
-    _clean_host(h)
+    _to_host(h)
     for chunk in _raw_hosts.split(",")
     for h in chunk.split()
-    if _clean_host(h)
+    if _to_host(h)
 ]
 
 # Render exposes the primary domain as RENDER_EXTERNAL_HOSTNAME; include it automatically.
-_render_host = _clean_host(os.getenv("RENDER_EXTERNAL_HOSTNAME", ""))
+_render_host = _to_host(os.getenv("RENDER_EXTERNAL_HOSTNAME", ""))
 if _render_host and _render_host not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append(_render_host)
 
 # Some users keep the custom apex in PRIMARY_DOMAIN
-_primary_domain = _clean_host(os.getenv("PRIMARY_DOMAIN", ""))
+_primary_domain = _to_host(os.getenv("PRIMARY_DOMAIN", ""))
 if _primary_domain and _primary_domain not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append(_primary_domain)
 
@@ -41,10 +74,10 @@ if not ALLOWED_HOSTS:
 _raw_csrf = os.getenv("CSRF_TRUSTED_ORIGINS", "")
 if _raw_csrf.strip():
     CSRF_TRUSTED_ORIGINS = [
-        _clean_host(o)
+        _to_origin(o)
         for chunk in _raw_csrf.split(",")
         for o in chunk.split()
-        if _clean_host(o)
+        if _to_origin(o)
     ]
 else:
     CSRF_TRUSTED_ORIGINS = [f"https://{h}" for h in ALLOWED_HOSTS if "." in h and not h.startswith(".")]
