@@ -144,7 +144,7 @@
             <div class="up-icon"><i class="bi bi-cloud-arrow-up"></i></div>
             <div>
               <div class="up-title">Upload image</div>
-              <div class="up-sub">Click or drag & drop</div>
+              <div class="up-sub">Click, drag & drop, or paste (Ctrl+V)</div>
             </div>
           </button>
 
@@ -217,6 +217,16 @@ document.addEventListener("DOMContentLoaded", function(){
     reader.onload = e => { preview.src = e.target.result; showPreview(); if (realClear) realClear.checked = false; };
     reader.readAsDataURL(file);
   }
+  function clipboardImageFile(e){
+    const cb = e.clipboardData;
+    if(!cb || !cb.items) return null;
+    for(const item of cb.items){
+      if(item.kind === "file" && item.type && item.type.startsWith("image/")){
+        return item.getAsFile();
+      }
+    }
+    return null;
+  }
 
   realInput?.addEventListener("change", function(){
     const file = this.files && this.files[0];
@@ -239,6 +249,28 @@ document.addEventListener("DOMContentLoaded", function(){
         dataTransfer.items.add(file);
         realInput.files = dataTransfer.files;
         handleFile(file);
+      }
+    });
+    const handlePaste = (e) => {
+      if (e.defaultPrevented) return;
+      const file = clipboardImageFile(e);
+      if (!file) return;
+      const active = document.activeElement;
+      const typingOutsideUploader = active && /^(INPUT|TEXTAREA)$/i.test(active.tagName) && !uploader.contains(active);
+      if (typingOutsideUploader) return;
+      e.preventDefault();
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(file);
+      realInput.files = dataTransfer.files;
+      handleFile(file);
+      uploader.classList.add("drag-over");
+      setTimeout(()=>uploader.classList.remove("drag-over"), 180);
+    };
+    uploader.addEventListener("paste", handlePaste);
+    document.addEventListener("paste", (e)=>{
+      const active = document.activeElement;
+      if (uploader.contains(active) || active === document.body || active === uploader){
+        handlePaste(e);
       }
     });
   }

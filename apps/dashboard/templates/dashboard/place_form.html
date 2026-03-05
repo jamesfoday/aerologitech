@@ -105,7 +105,7 @@
       {% csrf_token %}
       {{ form.non_field_errors }}
 
-      <div class="place-upload-tile uploader mb-3" id="uploader">
+      <div class="place-upload-tile uploader mb-3" id="uploader" tabindex="0" aria-label="Place image uploader">
         {% if place and place.hero_image %}
           <div class="preview-wrap" id="previewWrap">
             <img class="preview" id="imgPreview" src="{{ place.hero_image.url }}" alt="{{ place.name }}">
@@ -117,7 +117,7 @@
           <div class="up-icon"><i class="bi bi-cloud-arrow-up"></i></div>
           <div>
             <div class="up-title">Upload hero image</div>
-            <div class="up-sub">Click or drag & drop</div>
+            <div class="up-sub">Click, drag & drop, or paste (Ctrl+V)</div>
           </div>
         </button>
         <div class="django-file-wrap" aria-hidden="true">
@@ -266,6 +266,26 @@
       syncInputFromSelected();
       renderFromSelection();
     }
+    function clipboardImageFiles(e){
+      const cb = e.clipboardData;
+      if(!cb || !cb.items) return [];
+      return Array.from(cb.items)
+        .filter((item)=>item.kind === 'file' && item.type && item.type.startsWith('image/'))
+        .map((item)=>item.getAsFile())
+        .filter(Boolean);
+    }
+    function handlePaste(e){
+      if(e.defaultPrevented) return;
+      const files = clipboardImageFiles(e);
+      if(!files.length) return;
+      const active = document.activeElement;
+      const typingOutsideUploader = active && /^(INPUT|TEXTAREA)$/i.test(active.tagName) && !uploader.contains(active);
+      if(typingOutsideUploader) return;
+      e.preventDefault();
+      addFiles(files);
+      uploader.classList.add('drag-over');
+      setTimeout(()=>uploader.classList.remove('drag-over'), 180);
+    }
 
     uploadEmpty.addEventListener('click', ()=> fileInput && fileInput.click());
     previewWrap.addEventListener('click', (e)=>{
@@ -290,6 +310,13 @@
       e.preventDefault(); uploader.classList.remove('drag-over');
       if(!fileInput) return;
       if(e.dataTransfer.files.length){ addFiles(e.dataTransfer.files); }
+    });
+    uploader.addEventListener('paste', handlePaste);
+    document.addEventListener('paste', (e)=>{
+      const active = document.activeElement;
+      if(uploader.contains(active) || active === document.body || active === uploader){
+        handlePaste(e);
+      }
     });
 
     // Lightweight required-field check to avoid losing files on server round-trip
