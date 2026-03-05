@@ -148,10 +148,10 @@
   .service-rel-card{
     text-decoration:none;
     color:inherit;
-    border:1px solid #dbeafe;
-    border-radius:12px;
+    border:#6cc6f3 solid 5px !important;
+    border-radius:18px;
     overflow:hidden;
-    background:#f8fbff;
+    background:#fff;
     transition:.18s ease;
     display:block;
   }
@@ -161,18 +161,24 @@
   }
   .service-rel-thumb{
     width:100%;
-    height:130px;
+    height:150px;
     overflow:hidden;
-    background:#fff;
+    background:linear-gradient(135deg,#ecf7ff,#d7eeff);
+    border-bottom:3px solid #9ed8ff;
+    padding:10px;
   }
   .service-rel-thumb img{
     width:100%;
     height:100%;
     object-fit:cover;
     display:block;
+    border-radius:14px;
   }
   .service-rel-meta{
-    padding:10px 12px;
+    padding:12px 14px;
+    margin:12px;
+    border-radius:20px;
+    background:var(--soft);
   }
   .service-rel-name{
     font-weight:800;
@@ -183,6 +189,10 @@
     color:#475569;
     font-size:.88rem;
     line-height:1.4;
+    display:-webkit-box;
+    -webkit-box-orient:vertical;
+    -webkit-line-clamp:2;
+    overflow:hidden;
   }
   @media (max-width: 980px){
     .service-detail-grid{
@@ -252,7 +262,7 @@
                 <div class="service-rel-meta">
                   <div class="service-rel-name">{{ r.name }}</div>
                   {% if r.description %}
-                    <div class="service-rel-snippet">{{ r.description|truncatechars:90 }}</div>
+                    <div class="service-rel-snippet">{{ r.description|truncatewords:8 }}</div>
                   {% endif %}
                 </div>
               </a>

@@ -53,7 +53,7 @@
           <div class="card__body">
             <h3 class="card__name">{{ s.name }}</h3>
             <p class="card__desc">
-              {{ s.description|default:"No description."|truncatechars:90 }}
+              {{ s.description|default:"No description."|truncatewords:8 }}
             </p>
           </div>
         </article>

@@ -9,6 +9,8 @@
   --accent: #10b981;
   --shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
   --radius: 16px;
+  --font-heading: "Anton", sans-serif;
+  --font-paragraph: "Lexend Deca", sans-serif;
   
 }
 
@@ -17,6 +19,20 @@ body {
   background: var(--bg) !important;
   font-family: "Inter", "SF Pro Display", system-ui, -apple-system, sans-serif;
   color: var(--ink);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-style: normal;
+}
+
+p {
+  font-family: var(--font-paragraph);
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+  color: #383838 !important;
 }
 
 /* Utility */

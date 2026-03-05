@@ -102,7 +102,7 @@ left: 230px !important;
 
 }
 
-.card{ background:var(--card); border-radius:12px; box-shadow:var(--shadow); overflow:hidden; display:flex; flex-direction:column; }
+.card{ background:var(--card); border-radius:12px; box-shadow:var(--shadow); overflow:hidden; display:flex; flex-direction:column; border:#6cc6f3 solid 5px !important; }
 .card__media{ position:relative; height:250px; background:#ffffff; }
 .card__media img{ width:100%; height:100%; object-fit:cover; display:block; padding: 10px 15px 0 10px ; border-top-left-radius: 30px; border-top-right-radius: 30px; border-bottom: solid 2px #4386c4;}
 .card__price{
@@ -119,7 +119,16 @@ left: 230px !important;
 
 .card__body{ padding:12px; background:var(--soft); margin: 12px; border-radius: 20px; }
 .card__name{ margin:0 0 6px; font-weight:800; color:#0f172a; font-size:14px; }
-.card__desc{ margin:0; color:var(--muted); font-size:12px; line-height:1.45; }
+.card__desc{
+  margin:0;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.45;
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  overflow:hidden;
+}
 
 .empty{ text-align:center; color:var(--muted); padding:24px 0; }
 

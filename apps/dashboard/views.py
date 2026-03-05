@@ -46,6 +46,12 @@ class PlaceForm(forms.ModelForm):
         }
 
 
+def _hide_location_fields(form: PlaceForm) -> PlaceForm:
+    for field_name in ("map_url", "latitude", "longitude"):
+        form.fields.pop(field_name, None)
+    return form
+
+
 @login_required
 def dashboard_view(request):
     # ---- Sales (last 12 months), grouped by month ----
@@ -146,7 +152,7 @@ def places_list_view(request):
 def places_create_view(request):
     if request.method == "POST":
         hero_files = request.FILES.getlist("hero_image")
-        form = PlaceForm(request.POST, request.FILES)
+        form = _hide_location_fields(PlaceForm(request.POST, request.FILES))
         if form.is_valid():
             place = form.save(commit=False)
             if hero_files:
@@ -157,7 +163,7 @@ def places_create_view(request):
                 PlaceImage.objects.create(place=place, image=f)
             return redirect("dashboard:places_list")
     else:
-        form = PlaceForm()
+        form = _hide_location_fields(PlaceForm())
     return render(request, "dashboard/place_form.html", {"form": form, "is_edit": False, "place": None})
 
 

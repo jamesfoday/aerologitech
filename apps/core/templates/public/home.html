@@ -75,7 +75,7 @@
             </div>
             <div class="card__body">
               <h3 class="card__name">{{ s.name }}</h3>
-              <p class="card__desc">{{ s.description|default:"No description."|truncatechars:90 }}</p>
+              <p class="card__desc">{{ s.description|default:"No description."|truncatewords:8 }}</p>
             </div>
           </article>
         {% endfor %}
@@ -106,21 +106,36 @@ We ensure comfort and serenity during guests’ arrival or departure at the airp
       <h3 class="section-title">Popular Rental Cars</h3>
       <a href="{% url 'services:catalog_cars' %}" class="btn-link">See all cars</a>
     </div>
-    <div class="car-grid">
-      {% for car in car_teaser %}
-      <article class="car-card">
-        <div class="car-card__media">
-          <img src="{% static 'images/car-hero.png' %}" alt="{{ car.name }}">
-          <span class="card__price">{{ car.price }}</span>
-          <a href="{% url 'services:catalog_cars' %}" class="card__view">View</a>
-        </div>
-        <div class="car-card__body">
-          <h4 class="car-card__name">{{ car.name }}</h4>
-          <p class="car-card__specs">{{ car.specs }}</p>
-        </div>
-      </article>
-      {% endfor %}
-    </div>
+    {% if car_teaser %}
+      <div class="car-grid">
+        {% for car in car_teaser %}
+        <article class="car-card">
+          <div class="car-card__media">
+            {% if car.image %}
+              <img src="{{ car.image.url }}" alt="{{ car.name }}">
+            {% else %}
+              <img src="{% static 'images/car-placeholder.jpg' %}" alt="{{ car.name }}">
+            {% endif %}
+            {% if car.price %}
+              <span class="card__price">{{ car.price|floatformat:0 }}€</span>
+            {% endif %}
+            <a href="{% url 'services:car_detail' car.pk %}" class="card__view">View</a>
+          </div>
+          <div class="car-card__body">
+            <h4 class="car-card__name">{{ car.name }}</h4>
+            <p class="car-card__specs">
+              {% if car.seats %}{{ car.seats }} seats{% endif %}
+              {% if car.transmission %}{% if car.seats %} • {% endif %}{{ car.transmission|title }}{% endif %}
+              {% if car.luggage %} • {{ car.luggage }} luggage{% endif %}
+              {% if car.tank %} • {{ car.tank }} tank{% endif %}
+            </p>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty">No cars yet.</div>
+    {% endif %}
   </section>
 
 

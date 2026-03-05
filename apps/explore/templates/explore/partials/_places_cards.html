@@ -29,7 +29,7 @@
         </div>
         <div class="card__body">
           <h3 class="card__name">{{ name }}</h3>
-          <p class="card__desc">{{ p.short_desc|default:p.region|truncatechars:86 }}</p>
+          <p class="card__desc">{{ p.short_desc|default:p.region|truncatewords:8 }}</p>
         </div>
       </article>
       {% endwith %}

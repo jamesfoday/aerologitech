@@ -19,7 +19,7 @@
             <small class="text-muted">{{ p.region }}</small>
           </div>
           <h3 class="card__name">{{ p.name }}</h3>
-          <p class="card__desc">{{ p.short_desc|truncatechars:120 }}</p>
+          <p class="card__desc">{{ p.short_desc|truncatewords:8 }}</p>
         </div>
       </article>
     {% endfor %}

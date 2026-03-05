@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from apps.services.models import AirportService
+from apps.services.models import AirportService, Car
 from apps.explore.models import Place
 
 def home(request):
@@ -19,11 +19,7 @@ def home(request):
         .order_by("sort_order", "name")[:6]
     )
 
-    car_teaser = [
-        {"name": "Hyundai Creta", "price": "100€", "specs": "5 seats · Automatic · 2 luggage · 6.5L/100km tank"},
-        {"name": "Toyota Fortuner", "price": "200€", "specs": "5 seats · Automatic · 2 luggage · 6.5L/100km tank"},
-        {"name": "Toyota Hiace", "price": "100€", "specs": "7 seats · Manual · 19 luggage · 9.5L/100km tank"},
-    ]
+    car_teaser = Car.objects.filter(available=True).order_by("-created_at")[:3]
 
     ctx = {
         "services": services,
