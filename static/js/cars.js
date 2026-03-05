@@ -1,5 +1,5 @@
 /* cars.js
-   - Image uploader: click + drag & drop + live preview + remove (supports Django clear checkbox)
+   - Image uploader: click + drag & drop + paste + live preview + remove (supports Django clear checkbox)
    - Quantity controls: [data-qty] with [data-minus]/[data-plus], honors min/max/step
 */
 
@@ -106,6 +106,17 @@ document.addEventListener("DOMContentLoaded", function () {
         if (clearInput) clearInput.checked = false;
       }
     }
+    function clipboardImageFile(e) {
+      var cb = e.clipboardData;
+      if (!cb || !cb.items) return null;
+      for (var i = 0; i < cb.items.length; i += 1) {
+        var item = cb.items[i];
+        if (item.kind === "file" && item.type && item.type.indexOf("image/") === 0) {
+          return item.getAsFile();
+        }
+      }
+      return null;
+    }
 
     input.addEventListener("change", function () {
       var file = (input.files && input.files[0]) || null;
@@ -136,6 +147,36 @@ document.addEventListener("DOMContentLoaded", function () {
         dt.items.add(file);
         input.files = dt.files;
         input.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+    });
+
+    // Paste image from clipboard (Ctrl/Cmd + V)
+    function handlePaste(e) {
+      if (e.defaultPrevented) return;
+      var file = clipboardImageFile(e);
+      if (!file) return;
+
+      var active = document.activeElement;
+      var typingOutsideUploader = active && /^(INPUT|TEXTAREA)$/i.test(active.tagName) && !uploader.contains(active);
+      if (typingOutsideUploader) return;
+
+      e.preventDefault();
+      var dt = new DataTransfer();
+      dt.items.add(file);
+      input.files = dt.files;
+      input.dispatchEvent(new Event("change", { bubbles: true }));
+      uploader.classList.add("drag-over");
+      dropZone.classList.add("is-drag");
+      setTimeout(function () {
+        uploader.classList.remove("drag-over");
+        dropZone.classList.remove("is-drag");
+      }, 180);
+    }
+    uploader.addEventListener("paste", handlePaste);
+    document.addEventListener("paste", function (e) {
+      var active = document.activeElement;
+      if (uploader.contains(active) || active === document.body || active === uploader) {
+        handlePaste(e);
       }
     });
 

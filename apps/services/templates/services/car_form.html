@@ -36,7 +36,7 @@
       {% csrf_token %}
 
       <!-- Uploader (empty state + preview circle handled by cars.js) -->
-      <div class="cars-uploader" id="carUploader">
+      <div class="cars-uploader" id="carUploader" tabindex="0" aria-label="Car image uploader">
         <!-- PREVIEW (existing image in edit mode) -->
         {% if mode == "edit" and car and car.image %}
           <img src="{{ car.image.url }}" alt="{{ car.name }}" class="cars-preview" id="cars-preview-existing">
@@ -46,7 +46,7 @@
 
         <!-- EMPTY STATE (click or drag & drop) -->
         <label for="{{ form.image.id_for_label }}" class="cars-upload-zone cars-upload-zone--cloud">
-          <span class="cars-upload-hint">Upload image — Click or drag & drop</span>
+          <span class="cars-upload-hint">Upload image — Click, drag & drop, or paste (Ctrl+V)</span>
         </label>
 
         <!-- Real file input (visually hidden) -->
